@@ -15,13 +15,22 @@ import routesRoutes from './modules/routes/routes.routes';
 import nearbyServicesRoutes from './modules/nearby_services/nearby_services.routes';
 import safetyDataRoutes from './modules/safety_data/safety_data.routes';
 
+import path from 'path';
+
 const app: Express = express();
 
 // Security Middlewares
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: false
+  })
+);
 app.use(cors({ origin: config.CORS_ORIGIN === '*' ? true : config.CORS_ORIGIN.split(',') }));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+
+// Serve static interactive web app
+app.use(express.static(path.join(__dirname, '../public')));
 
 // Apply general rate limiter
 app.use(generalApiLimiter);

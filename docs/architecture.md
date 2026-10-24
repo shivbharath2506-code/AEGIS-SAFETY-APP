@@ -2,7 +2,7 @@
 ## System Architecture & Technical Specification
 
 ### 1. Architectural Overview
-AEGIS is a personal safety and emergency-response platform designed for women and vulnerable individuals, inspired by the Kavalan initiative of the Tamil Nadu Police. The system emphasizes:
+AEGIS is an independent personal safety and emergency-response platform designed for women and vulnerable individuals in urban areas. The system emphasizes:
 - **Resilient Emergency Communication**: SOS alert creation with automatic fallback when GPS or high-speed connectivity is degraded.
 - **Privacy by Design**: Cryptographic token hashing, unguessable live-location tokens, strict user-data isolation, and zero background tracking without explicit user consent.
 - **Transparent Route Safety**: Grounded in audited public facilities (police stations, hospitals, 24x7 pharmacies) and municipal streetlighting audits in Chennai, Tamil Nadu.

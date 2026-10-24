@@ -7,7 +7,7 @@
 [![Tests](https://img.shields.io/badge/Tests-23%2F23%20Passing-brightgreen.svg)]()
 [![Focus](https://img.shields.io/badge/Focus-Chennai%2C%20Tamil%20Nadu-orange.svg)]()
 
-> A women-focused personal safety application inspired by the emergency-response concept of the **Tamil Nadu Police Kavalan** app. Built with reliable emergency communication, privacy-first live location sharing, verified public facilities, and safe route comparison for Chennai, Tamil Nadu.
+> A modern, women-focused personal safety web and mobile application. Built with reliable emergency communication, privacy-first live location sharing, verified public facilities, and safe route comparison for Chennai, Tamil Nadu.
 
 ---
 

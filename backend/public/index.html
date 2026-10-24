@@ -1,0 +1,2294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AEGIS — Advanced Emergency & Intelligent Safety System</title>
+  
+  <!-- Modern Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Leaflet Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+  <style>
+    :root {
+      --bg-dark: #0a0f1d;
+      --bg-card: rgba(16, 24, 44, 0.85);
+      --bg-card-hover: rgba(22, 33, 62, 0.95);
+      --bg-panel: #0d1527;
+      --border-color: rgba(255, 255, 255, 0.09);
+      --border-focus: #3b82f6;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --danger: #ef4444;
+      --danger-glow: rgba(239, 68, 68, 0.4);
+      --warning: #f59e0b;
+      --success: #10b981;
+      --primary: #3b82f6;
+      --primary-glow: rgba(59, 130, 246, 0.35);
+      --cyan: #06b6d4;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-full: 9999px;
+      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    h1, h2, h3, h4, .brand-font {
+      font-family: 'Outfit', sans-serif;
+    }
+
+    /* Ambient Background Glow */
+    .ambient-glow {
+      position: fixed;
+      top: -20%;
+      left: 20%;
+      width: 60vw;
+      height: 60vh;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, rgba(6, 182, 212, 0.03) 40%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ========================================================
+       TOP NAVIGATION BAR
+    ======================================================== */
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(10, 15, 29, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.85rem 2rem;
+      gap: 1.5rem;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .logo-badge {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      box-shadow: 0 0 15px var(--danger-glow);
+    }
+
+    .city-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      background: rgba(6, 182, 212, 0.12);
+      color: var(--cyan);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      padding: 0.25rem 0.65rem;
+      border-radius: var(--radius-full);
+      letter-spacing: 0.02em;
+    }
+
+    .city-tag .pulse-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--cyan);
+      border-radius: 50%;
+      animation: pulseAnim 2s infinite;
+    }
+
+    @keyframes pulseAnim {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 7px rgba(6, 182, 212, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); }
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .helpline-pills {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .helpline-btn {
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: var(--radius-full);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      transition: var(--transition);
+    }
+
+    .helpline-btn:hover {
+      background: rgba(239, 68, 68, 0.18);
+      border-color: var(--danger);
+      color: #fff;
+    }
+
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.35rem 0.85rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-full);
+      font-size: 0.85rem;
+    }
+
+    .user-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--cyan));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+
+    .btn-logout {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.85rem;
+      padding: 0.2rem 0.4rem;
+      transition: var(--transition);
+    }
+    .btn-logout:hover {
+      color: var(--danger);
+    }
+
+    /* ========================================================
+       LOGIN SCREEN / PORTAL (MODAL / FULL SCREEN VIEW)
+    ======================================================== */
+    .auth-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      background: rgba(10, 15, 29, 0.95);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .auth-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 35px rgba(59, 130, 246, 0.15);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 460px;
+      padding: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      position: relative;
+    }
+
+    .auth-header {
+      text-align: center;
+    }
+
+    .auth-header .logo-box {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 1rem;
+      background: linear-gradient(135deg, #ef4444, #991b1b);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      box-shadow: 0 0 25px var(--danger-glow);
+    }
+
+    .auth-header h2 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      margin-bottom: 0.35rem;
+    }
+
+    .auth-header p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .form-label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-prefix {
+      position: absolute;
+      left: 1rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .form-control {
+      width: 100%;
+      background: rgba(13, 21, 39, 0.85);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      color: var(--text-main);
+      font-size: 1rem;
+      padding: 0.85rem 1rem;
+      transition: var(--transition);
+      outline: none;
+      font-family: inherit;
+    }
+
+    .form-control.with-prefix {
+      padding-left: 3.5rem;
+    }
+
+    .form-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+      background: rgba(16, 26, 49, 1);
+    }
+
+    .btn-submit {
+      background: linear-gradient(135deg, var(--primary), #2563eb);
+      color: #fff;
+      font-weight: 600;
+      font-size: 1rem;
+      padding: 0.9rem 1.5rem;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      transition: var(--transition);
+      box-shadow: 0 4px 14px var(--primary-glow);
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+    }
+
+    .quick-demo-box {
+      border-top: 1px solid var(--border-color);
+      padding-top: 1.25rem;
+      text-align: center;
+    }
+
+    .btn-demo-link {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-color);
+      color: var(--cyan);
+      padding: 0.6rem 1.2rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-demo-link:hover {
+      background: rgba(6, 182, 212, 0.15);
+      border-color: var(--cyan);
+    }
+
+    /* ========================================================
+       MAIN DASHBOARD GRID LAYOUT
+    ======================================================== */
+    .dashboard-container {
+      flex: 1;
+      padding: 1.5rem 2rem;
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 1.5rem;
+      max-width: 1800px;
+      margin: 0 auto;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+    }
+
+    @media (max-width: 1180px) {
+      .dashboard-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Cards */
+    .glass-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      transition: var(--transition);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.85rem;
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      color: #fff;
+    }
+
+    .card-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.2rem 0.55rem;
+      border-radius: var(--radius-full);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Left Column: Interactive Map & Route Safety */
+    .left-column {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .map-wrapper {
+      position: relative;
+      height: 480px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    #chennai-map {
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+    }
+
+    .map-controls-floating {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      z-index: 500;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .map-btn {
+      background: rgba(10, 15, 29, 0.9);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border-color);
+      color: #fff;
+      padding: 0.55rem 0.95rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      transition: var(--transition);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+
+    .map-btn:hover {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .map-legend {
+      position: absolute;
+      bottom: 1rem;
+      left: 1rem;
+      z-index: 500;
+      background: rgba(10, 15, 29, 0.9);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border-color);
+      padding: 0.6rem 0.9rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .legend-icon {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    /* Safe Route Comparison Form */
+    .route-query-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 1rem;
+      align-items: end;
+      background: rgba(13, 21, 39, 0.6);
+      padding: 1rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+    }
+
+    @media (max-width: 768px) {
+      .route-query-bar {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .route-results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    @media (max-width: 768px) {
+      .route-results-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .route-card {
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 1.15rem;
+      background: rgba(13, 21, 39, 0.7);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      position: relative;
+    }
+
+    .route-card.recommended {
+      border-color: var(--success);
+      background: rgba(16, 185, 129, 0.05);
+    }
+
+    .route-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.2rem 0.5rem;
+      border-radius: var(--radius-full);
+      width: fit-content;
+    }
+
+    .badge-safe {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-fast {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--primary);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .route-stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding-bottom: 0.4rem;
+    }
+
+    .score-circle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      font-weight: 800;
+      font-size: 1.1rem;
+    }
+
+    /* Right Column: SOS, Known Contacts, Quick Tools */
+    .right-column {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* Big SOS Emergency Button */
+    .sos-card {
+      background: radial-gradient(circle at top, rgba(239, 68, 68, 0.15), rgba(16, 24, 44, 0.95));
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      text-align: center;
+      padding: 2rem 1.5rem;
+      position: relative;
+    }
+
+    .sos-button-wrapper {
+      position: relative;
+      width: 170px;
+      height: 170px;
+      margin: 1rem auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sos-btn {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ef4444 0%, #991b1b 100%);
+      border: 4px solid #fff;
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 900;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 40px var(--danger-glow);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      user-select: none;
+      -webkit-user-select: none;
+      z-index: 5;
+    }
+
+    .sos-btn:active {
+      transform: scale(0.94);
+      box-shadow: 0 0 60px rgba(239, 68, 68, 0.8);
+    }
+
+    .sos-subtext {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      opacity: 0.9;
+    }
+
+    .sos-pulse-ring {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 2px solid var(--danger);
+      animation: ripple 2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+      pointer-events: none;
+    }
+
+    @keyframes ripple {
+      0% { transform: scale(0.8); opacity: 1; }
+      100% { transform: scale(1.35); opacity: 0; }
+    }
+
+    .sos-instructions {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+    }
+
+    .sos-status-alert {
+      display: none;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid var(--danger);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      margin-top: 1rem;
+      text-align: left;
+    }
+
+    .btn-resolve-sos {
+      margin-top: 0.75rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid #fff;
+      color: #fff;
+      padding: 0.45rem 1rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: var(--transition);
+    }
+
+    .btn-resolve-sos:hover {
+      background: #fff;
+      color: var(--bg-dark);
+    }
+
+    /* Known Trusted Contacts Section */
+    .contacts-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      max-height: 280px;
+      overflow-y: auto;
+      padding-right: 0.35rem;
+    }
+
+    .contact-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(13, 21, 39, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 1rem;
+      transition: var(--transition);
+    }
+
+    .contact-item:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+      background: rgba(22, 33, 62, 0.9);
+    }
+
+    .contact-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .contact-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .contact-phone {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .contact-relation-badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 0.15rem 0.45rem;
+      border-radius: var(--radius-full);
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--primary);
+      text-transform: uppercase;
+    }
+
+    .contact-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .action-icon-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition);
+      text-decoration: none;
+    }
+
+    .action-icon-btn:hover {
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .action-icon-btn.delete-btn:hover {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--danger);
+      border-color: var(--danger);
+    }
+
+    .btn-add-contact {
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px dashed rgba(59, 130, 246, 0.4);
+      color: var(--primary);
+      padding: 0.75rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: var(--transition);
+      width: 100%;
+    }
+
+    .btn-add-contact:hover {
+      background: rgba(59, 130, 246, 0.2);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    /* Quick Safety Tools Grid */
+    .tools-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .tool-tile {
+      background: rgba(13, 21, 39, 0.7);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      transition: var(--transition);
+      text-align: left;
+    }
+
+    .tool-tile:hover {
+      background: rgba(22, 33, 62, 0.9);
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .tool-icon {
+      font-size: 1.4rem;
+      color: var(--cyan);
+    }
+
+    .tool-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .tool-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* ========================================================
+       MODAL DIALOGS (ADD CONTACT, FAKE CALL, SHARE LINK)
+    ======================================================== */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(10px);
+      z-index: 3000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .modal-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      width: 100%;
+      max-width: 480px;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.75rem;
+    }
+
+    .btn-close-modal {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.25rem;
+      cursor: pointer;
+    }
+
+    /* Fake Call Screen (Full view simulation) */
+    .fake-call-overlay {
+      position: fixed;
+      inset: 0;
+      background: #020617;
+      z-index: 5000;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4rem 2rem;
+    }
+
+    .fake-call-caller {
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    .fake-caller-avatar {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: #1e293b;
+      margin: 0 auto 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      color: var(--cyan);
+      border: 3px solid rgba(255,255,255,0.1);
+    }
+
+    .fake-call-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      width: 100%;
+      max-width: 360px;
+      margin-bottom: 3rem;
+    }
+
+    .call-btn {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      color: #fff;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      transition: var(--transition);
+    }
+
+    .call-btn.decline {
+      background: #ef4444;
+    }
+    .call-btn.accept {
+      background: #10b981;
+    }
+
+    /* Notifications Banner Toast */
+    .toast-box {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 4000;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      pointer-events: none;
+    }
+
+    .toast-msg {
+      background: rgba(16, 24, 44, 0.95);
+      border: 1px solid var(--border-color);
+      border-left: 4px solid var(--primary);
+      padding: 0.85rem 1.25rem;
+      border-radius: var(--radius-sm);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      color: #fff;
+      font-size: 0.88rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      animation: slideInRight 0.3s ease;
+      pointer-events: auto;
+    }
+
+    .toast-msg.success { border-left-color: var(--success); }
+    .toast-msg.danger { border-left-color: var(--danger); }
+
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ambient-glow"></div>
+
+  <!-- ========================================================
+       TOP NAVIGATION BAR
+  ======================================================== -->
+  <header class="top-nav">
+    <div class="brand-group">
+      <a href="#" class="brand-logo">
+        <div class="logo-badge">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <span>AEGIS</span>
+      </a>
+      <div class="city-tag">
+        <span class="pulse-dot"></span>
+        <span>Chennai Safety Grid</span>
+      </div>
+    </div>
+
+    <div class="nav-actions">
+      <!-- Emergency Hotlines -->
+      <div class="helpline-pills">
+        <a href="tel:112" class="helpline-btn" title="National Emergency Helpline">
+          <i class="fa-solid fa-phone" style="color: #ef4444;"></i>
+          <span>112</span>
+        </a>
+        <a href="tel:1091" class="helpline-btn" title="Women Helpline">
+          <i class="fa-solid fa-person-dress" style="color: #ec4899;"></i>
+          <span>1091</span>
+        </a>
+        <a href="tel:100" class="helpline-btn" title="Police Emergency">
+          <i class="fa-solid fa-building-shield" style="color: #3b82f6;"></i>
+          <span>100</span>
+        </a>
+      </div>
+
+      <!-- User Profile Badge & Logout -->
+      <div class="user-pill" id="user-pill-container" style="display: none;">
+        <div class="user-avatar" id="nav-user-initial">S</div>
+        <div>
+          <div style="font-weight: 600; font-size: 0.82rem;" id="nav-user-name">User</div>
+          <div style="font-size: 0.72rem; color: var(--text-muted);" id="nav-user-phone">+91 98401 12233</div>
+        </div>
+        <button class="btn-logout" id="btn-logout" title="Log Out">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================
+       LOGIN SCREEN OVERLAY (DISPLAYED FIRST IF NOT LOGGED IN)
+  ======================================================== -->
+  <div class="auth-overlay" id="auth-overlay">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="logo-box">
+          <i class="fa-solid fa-shield-cat"></i>
+        </div>
+        <h2>AEGIS Safety Portal</h2>
+        <p>Chennai Metropolitan Emergency & Personal Protection System</p>
+      </div>
+
+      <!-- Step 1: Mobile Phone Number Input -->
+      <div id="auth-step-phone">
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label class="form-label">Enter Mobile Number</label>
+          <div class="input-wrapper">
+            <span class="input-prefix">+91</span>
+            <input type="tel" id="input-phone" class="form-control with-prefix" placeholder="98401 23456" maxlength="10" autofocus>
+          </div>
+          <small style="color: var(--text-dim); font-size: 0.75rem; margin-top: 0.25rem;">
+            A one-time 6-digit security code will be dispatched.
+          </small>
+        </div>
+
+        <button class="btn-submit" id="btn-request-otp" style="width: 100%;">
+          <span>Send Verification Code</span>
+          <i class="fa-solid fa-paper-plane"></i>
+        </button>
+      </div>
+
+      <!-- Step 2: OTP Verification Input -->
+      <div id="auth-step-otp" style="display: none;">
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label class="form-label">6-Digit Verification Code</label>
+            <span style="font-size: 0.75rem; color: var(--cyan); cursor: pointer;" id="btn-change-phone">Change Phone</span>
+          </div>
+          <input type="text" id="input-otp" class="form-control" placeholder="123456" maxlength="6" style="letter-spacing: 0.25em; text-align: center; font-size: 1.3rem; font-weight: 700;">
+          <div style="font-size: 0.75rem; color: var(--success); margin-top: 0.35rem; display: flex; align-items: center; gap: 0.4rem;">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>Development Verification OTP: <strong>123456</strong></span>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1.25rem;">
+          <label class="form-label">Your Name (For Emergency Alerts)</label>
+          <input type="text" id="input-display-name" class="form-control" placeholder="e.g. Shiv Bharath" value="Shiv Bharath">
+        </div>
+
+        <button class="btn-submit" id="btn-verify-otp" style="width: 100%;">
+          <span>Verify & Enter AEGIS</span>
+          <i class="fa-solid fa-shield"></i>
+        </button>
+      </div>
+
+      <div class="quick-demo-box">
+        <button class="btn-demo-link" id="btn-quick-demo">
+          <i class="fa-solid fa-bolt"></i>
+          <span>Instant Demo Access (+91 98401 12233)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       MAIN REAL-TIME SAFETY DASHBOARD
+  ======================================================== -->
+  <main class="dashboard-container" id="main-dashboard">
+
+    <!-- LEFT COLUMN: MAP & CHENNAI SAFE ROUTE ENGINE -->
+    <section class="left-column">
+      
+      <!-- Interactive Leaflet Map -->
+      <div class="glass-card" style="padding: 1rem;">
+        <div class="card-header" style="border: none; padding-bottom: 0.5rem;">
+          <div class="card-title">
+            <i class="fa-solid fa-map-location-dot" style="color: var(--cyan);"></i>
+            <span>Chennai Metropolitan Live Safety Radar</span>
+          </div>
+          <div class="card-badge" style="background: rgba(6, 182, 212, 0.15); color: var(--cyan);">
+            GPS: ACTIVE
+          </div>
+        </div>
+
+        <div class="map-wrapper">
+          <div id="chennai-map"></div>
+
+          <!-- Floating Map Filter Controls -->
+          <div class="map-controls-floating">
+            <button class="map-btn" id="btn-locate-me" title="Locate My Position">
+              <i class="fa-solid fa-location-crosshairs"></i>
+              <span>Locate Me</span>
+            </button>
+            <button class="map-btn" id="btn-toggle-police" title="Show/Hide Police">
+              <i class="fa-solid fa-building-shield" style="color: #3b82f6;"></i>
+              <span>Police Stations</span>
+            </button>
+            <button class="map-btn" id="btn-toggle-hospitals" title="Show/Hide Hospitals">
+              <i class="fa-solid fa-hospital" style="color: #ef4444;"></i>
+              <span>Hospitals</span>
+            </button>
+            <button class="map-btn" id="btn-toggle-pharmacies" title="Show/Hide Pharmacies">
+              <i class="fa-solid fa-pills" style="color: #10b981;"></i>
+              <span>24x7 Pharmacies</span>
+            </button>
+          </div>
+
+          <!-- Map Legend -->
+          <div class="map-legend">
+            <div class="legend-item">
+              <span class="legend-icon" style="background: #3b82f6;"></span>
+              <span>Police</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-icon" style="background: #ef4444;"></span>
+              <span>Hospital</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-icon" style="background: #10b981;"></span>
+              <span>Pharmacy</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-icon" style="background: #06b6d4;"></span>
+              <span>You</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-Time Chennai Safe Route Analyzer -->
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fa-solid fa-route" style="color: var(--success);"></i>
+            <span>Intelligent Safe Route Comparison</span>
+          </div>
+          <div class="card-badge" style="background: rgba(16, 185, 129, 0.15); color: var(--success);">
+            Municipal Lighting & Facility Scored
+          </div>
+        </div>
+
+        <p style="font-size: 0.85rem; color: var(--text-muted);">
+          Compare standard navigation paths against safety-optimized corridors in Chennai evaluated with audited public streetlighting, 24x7 emergency facility density, and municipal CCTV coverage.
+        </p>
+
+        <!-- Route Selector Bar -->
+        <div class="route-query-bar">
+          <div class="form-group">
+            <label class="form-label"><i class="fa-solid fa-circle-dot" style="color: var(--cyan); margin-right: 4px;"></i> Origin Location</label>
+            <select id="route-origin" class="form-control">
+              <option value="13.0326,80.1706" selected>Ramapuram (SRM / DLF IT Corridor)</option>
+              <option value="13.0418,80.2341">T. Nagar (Panagal Park)</option>
+              <option value="13.0067,80.2025">Guindy (Kathipara Junction)</option>
+              <option value="12.9815,80.2180">Velachery (Phoenix Marketcity)</option>
+              <option value="13.0827,80.2707">Chennai Central Railway Station</option>
+              <option value="12.9716,80.2437">OMR Thoraipakkam (IT Corridor)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label"><i class="fa-solid fa-location-dot" style="color: var(--danger); margin-right: 4px;"></i> Destination</label>
+            <select id="route-dest" class="form-control">
+              <option value="13.0694,80.1948" selected>Koyambedu (CMBT Central Hub)</option>
+              <option value="13.0850,80.2100">Anna Nagar (Roundtana)</option>
+              <option value="13.0063,80.2575">Adyar (Madhya Kailash)</option>
+              <option value="12.9941,80.1709">Chennai International Airport</option>
+              <option value="13.0475,80.2825">Marina Beach (Kamarajar Salai)</option>
+            </select>
+          </div>
+
+          <button class="btn-submit" id="btn-compare-routes" style="padding: 0.85rem 1.4rem;">
+            <i class="fa-solid fa-magnifying-glass-location"></i>
+            <span>Analyze Safety</span>
+          </button>
+        </div>
+
+        <!-- Route Comparison Results Grid -->
+        <div class="route-results-grid" id="route-results-container">
+          <!-- Dynamically filled by JS -->
+          <div class="route-card recommended" id="safe-route-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="route-badge badge-safe">
+                <i class="fa-solid fa-shield-check"></i> RECOMMENDED SAFE ROUTE
+              </span>
+              <div class="score-circle" style="background: rgba(16, 185, 129, 0.2); color: var(--success);" id="safe-score-val">88/100</div>
+            </div>
+            <h4 style="color: #fff; margin-top: 0.25rem;">Via Jawaharlal Nehru 100ft Road</h4>
+            <div class="route-stat-row">
+              <span style="color: var(--text-muted);">Travel Distance:</span>
+              <strong id="safe-dist">6.8 km (18 mins)</strong>
+            </div>
+            <div class="route-stat-row">
+              <span style="color: var(--text-muted);">Streetlighting Audit:</span>
+              <span style="color: var(--success); font-weight: 600;" id="safe-light">92% Audited Illumination</span>
+            </div>
+            <div class="route-stat-row">
+              <span style="color: var(--text-muted);">Nearby 24x7 Facilities:</span>
+              <span style="color: var(--cyan); font-weight: 600;" id="safe-facilities">4 Police Stns, 3 Hospitals</span>
+            </div>
+            <small style="color: var(--text-dim); font-size: 0.75rem;">
+              Audited route maintains continuous LED streetlighting and high density of operational public emergency services.
+            </small>
+          </div>
+
+          <div class="route-card" id="fast-route-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="route-badge badge-fast">
+                <i class="fa-solid fa-bolt"></i> FASTEST ROUTE (LESS ILLUMINATED)
+              </span>
+              <div class="score-circle" style="background: rgba(245, 158, 11, 0.2); color: var(--warning);" id="fast-score-val">61/100</div>
+            </div>
+            <h4 style="color: #fff; margin-top: 0.25rem;">Via Arcot Road & Inner Bypass</h4>
+            <div class="route-stat-row">
+              <span style="color: var(--text-muted);">Travel Distance:</span>
+              <strong id="fast-dist">6.2 km (15 mins)</strong>
+            </div>
+            <div class="route-stat-row">
+              <span style="color: var(--text-muted);">Streetlighting Audit:</span>
+              <span style="color: var(--warning); font-weight: 600;" id="fast-light">58% Audited Illumination</span>
+            </div>
+            <div class="route-stat-row">
+              <span style="color: var(--text-muted);">Nearby 24x7 Facilities:</span>
+              <span style="color: var(--text-muted);" id="fast-facilities">1 Police Stn, 1 Clinic</span>
+            </div>
+            <small style="color: var(--text-dim); font-size: 0.75rem;">
+              Contains 2 dimly lit road segments and isolated underpasses during night hours.
+            </small>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- RIGHT COLUMN: SOS COMMAND, KNOWN TRUSTED CONTACTS & TOOLS -->
+    <section class="right-column">
+      
+      <!-- SOS Emergency Command Card -->
+      <div class="glass-card sos-card">
+        <h3 style="font-size: 1.35rem; color: #fff;">EMERGENCY DISPATCH</h3>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.25rem;">
+          Broadcasts your live GPS coordinates & emergency SMS alert to all configured trusted contacts.
+        </p>
+
+        <div class="sos-button-wrapper">
+          <div class="sos-pulse-ring"></div>
+          <button class="sos-btn" id="btn-sos-trigger">
+            <span>SOS</span>
+            <span class="sos-subtext">HOLD 3 SEC</span>
+          </button>
+        </div>
+
+        <div class="sos-instructions">
+          <i class="fa-solid fa-hand-pointer" style="margin-right: 4px;"></i> Press & hold or click to trigger live dispatch
+        </div>
+
+        <!-- Audio Siren Toggle -->
+        <div style="margin-top: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.65rem;">
+          <input type="checkbox" id="chk-siren" style="cursor: pointer;">
+          <label for="chk-siren" style="font-size: 0.82rem; color: var(--text-muted); cursor: pointer;">
+            Sound loud emergency siren on trigger
+          </label>
+        </div>
+
+        <!-- Active SOS Alert Banner -->
+        <div class="sos-status-alert" id="sos-active-banner">
+          <div style="display: flex; align-items: center; gap: 0.6rem; color: #ef4444; font-weight: 700; font-size: 0.95rem;">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span>SOS ALERT BROADCAST ACTIVE</span>
+          </div>
+          <p style="font-size: 0.8rem; color: #fff; margin-top: 0.4rem;" id="sos-banner-details">
+            Emergency alert dispatched with GPS: 13.0827, 80.2707. Trusted contacts notified via SMS.
+          </p>
+          <button class="btn-resolve-sos" id="btn-resolve-sos">
+            <i class="fa-solid fa-circle-check" style="margin-right: 4px;"></i> I Am Safe — Cancel Alert
+          </button>
+        </div>
+      </div>
+
+      <!-- Known Trusted Contacts Section -->
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fa-solid fa-user-shield" style="color: var(--primary);"></i>
+            <span>My Trusted Contacts</span>
+          </div>
+          <span style="font-size: 0.75rem; color: var(--text-dim);" id="contacts-count">0 Saved</span>
+        </div>
+
+        <p style="font-size: 0.82rem; color: var(--text-muted);">
+          Your known contacts who will receive emergency SMS alerts with your real-time location.
+        </p>
+
+        <!-- Dynamic Contacts List -->
+        <div class="contacts-list" id="contacts-list-container">
+          <!-- Filled dynamically by JavaScript -->
+        </div>
+
+        <!-- Add Contact Action -->
+        <button class="btn-add-contact" id="btn-open-add-contact">
+          <i class="fa-solid fa-user-plus"></i>
+          <span>Add Known Contact</span>
+        </button>
+      </div>
+
+      <!-- Quick Safety Tools -->
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fa-solid fa-screwdriver-wrench" style="color: var(--cyan);"></i>
+            <span>Safety Tools</span>
+          </div>
+        </div>
+
+        <div class="tools-grid">
+          <!-- Live Location Sharing -->
+          <div class="tool-tile" id="tool-live-location">
+            <div class="tool-icon">
+              <i class="fa-solid fa-share-nodes"></i>
+            </div>
+            <div class="tool-title">Share Live Location</div>
+            <div class="tool-desc">Create 256-bit encrypted link for friends/family.</div>
+          </div>
+
+          <!-- Fake Escape Call -->
+          <div class="tool-tile" id="tool-fake-call">
+            <div class="tool-icon" style="color: #ec4899;">
+              <i class="fa-solid fa-phone-volume"></i>
+            </div>
+            <div class="tool-title">Fake Escape Call</div>
+            <div class="tool-desc">Trigger simulated incoming call to discreetly exit.</div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ========================================================
+       MODAL: ADD KNOWN CONTACT
+  ======================================================== -->
+  <div class="modal-backdrop" id="modal-add-contact">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 style="color: #fff; font-size: 1.2rem;">Add Known Trusted Contact</h3>
+        <button class="btn-close-modal" id="btn-close-contact-modal">&times;</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Contact Name</label>
+        <input type="text" id="new-contact-name" class="form-control" placeholder="e.g. Mom / Appa / Priya">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Mobile Number</label>
+        <div class="input-wrapper">
+          <span class="input-prefix">+91</span>
+          <input type="tel" id="new-contact-phone" class="form-control with-prefix" placeholder="98401 12233" maxlength="10">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Relationship</label>
+        <select id="new-contact-rel" class="form-control">
+          <option value="FAMILY" selected>Family (Parent / Sibling / Spouse)</option>
+          <option value="FRIEND">Friend</option>
+          <option value="GUARDIAN">Guardian</option>
+          <option value="TRUSTED">Trusted Contact</option>
+          <option value="OTHER">Other</option>
+        </select>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">
+        <input type="checkbox" id="new-contact-primary" style="cursor: pointer;">
+        <label for="new-contact-primary" style="font-size: 0.85rem; color: var(--text-muted); cursor: pointer;">
+          Set as Primary Emergency Contact
+        </label>
+      </div>
+
+      <button class="btn-submit" id="btn-save-contact" style="margin-top: 0.5rem;">
+        <i class="fa-solid fa-floppy-disk"></i>
+        <span>Save to My Trusted Contacts</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       MODAL: LIVE LOCATION SHARING
+  ======================================================== -->
+  <div class="modal-backdrop" id="modal-live-share">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 style="color: #fff; font-size: 1.2rem;">Live Location Session</h3>
+        <button class="btn-close-modal" id="btn-close-share-modal">&times;</button>
+      </div>
+
+      <p style="font-size: 0.85rem; color: var(--text-muted);">
+        A secure, unguessable tracking link has been initialized. Anyone with this link can view your live movements in Chennai for the specified duration.
+      </p>
+
+      <div class="form-group">
+        <label class="form-label">Session Duration</label>
+        <select id="share-duration" class="form-control">
+          <option value="30">30 Minutes</option>
+          <option value="60" selected>1 Hour</option>
+          <option value="120">2 Hours</option>
+          <option value="240">4 Hours</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Encrypted Sharing Link</label>
+        <div style="display: flex; gap: 0.5rem;">
+          <input type="text" id="share-link-input" class="form-control" readonly style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;">
+          <button class="map-btn" id="btn-copy-share-link">
+            <i class="fa-solid fa-copy"></i>
+          </button>
+        </div>
+      </div>
+
+      <button class="btn-submit" id="btn-start-share">
+        <i class="fa-solid fa-play"></i>
+        <span>Activate Location Broadcast</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       FULL-SCREEN FAKE CALL SIMULATOR
+  ======================================================== -->
+  <div class="fake-call-overlay" id="fake-call-screen">
+    <div class="fake-call-caller">
+      <div class="fake-caller-avatar">
+        <i class="fa-solid fa-user"></i>
+      </div>
+      <h2 style="font-size: 2rem; color: #fff;" id="fake-caller-name">Appa (Dad)</h2>
+      <p style="font-size: 1.1rem; color: var(--cyan); margin-top: 0.25rem;">+91 98401 12233</p>
+      <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.5rem;" id="fake-call-status">Incoming Call...</p>
+    </div>
+
+    <div class="fake-call-actions">
+      <button class="call-btn decline" id="btn-decline-fake-call" title="Decline Call">
+        <i class="fa-solid fa-phone-slash"></i>
+      </button>
+      <button class="call-btn accept" id="btn-accept-fake-call" title="Accept Call">
+        <i class="fa-solid fa-phone"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-box" id="toast-container"></div>
+
+  <!-- Leaflet Map JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- ========================================================
+       MAIN APPLICATION SCRIPT
+  ======================================================== -->
+  <script>
+    // App State
+    const API_BASE = window.location.origin + '/api/v1';
+    let currentUser = null;
+    let authToken = null;
+    let chennaiMap = null;
+    let userMarker = null;
+    let routePolyline = null;
+    let facilityMarkers = [];
+    let activeAlertId = null;
+    let sirenOscillator = null;
+    let ringOscillator = null;
+    let audioCtx = null;
+
+    // Default Chennai Coordinates
+    let currentCoords = { lat: 13.0827, lng: 80.2707 };
+
+    // Chennai POI Data
+    const CHENNAI_POIS = [
+      { id: '1', name: 'Koyambedu Police Station', cat: 'POLICE', lat: 13.0694, lng: 80.1948, phone: '044-23452600' },
+      { id: '2', name: 'Guindy Police Station', cat: 'POLICE', lat: 13.0067, lng: 80.2025, phone: '044-23452615' },
+      { id: '3', name: 'T. Nagar Police Station', cat: 'POLICE', lat: 13.0418, lng: 80.2341, phone: '044-23452620' },
+      { id: '4', name: 'Anna Nagar Police Station', cat: 'POLICE', lat: 13.0850, lng: 80.2100, phone: '044-23452630' },
+      { id: '5', name: 'MIOT International Hospital', cat: 'HOSPITAL', lat: 13.0245, lng: 80.1852, phone: '044-42002288' },
+      { id: '6', name: 'SIMS Hospital Vadapalani', cat: 'HOSPITAL', lat: 13.0520, lng: 80.2090, phone: '044-20002001' },
+      { id: '7', name: 'Apollo Hospitals Greams Road', cat: 'HOSPITAL', lat: 13.0600, lng: 80.2510, phone: '044-28290200' },
+      { id: '8', name: 'Apollo 24x7 Pharmacy Koyambedu', cat: 'PHARMACY', lat: 13.0680, lng: 80.1960, phone: '044-24790010' },
+      { id: '9', name: 'MedPlus 24x7 Ramapuram', cat: 'PHARMACY', lat: 13.0330, lng: 80.1720, phone: '044-22490020' },
+      { id: '10', name: 'Apollo Pharmacy T. Nagar', cat: 'PHARMACY', lat: 13.0410, lng: 80.2350, phone: '044-24340030' }
+    ];
+
+    // ========================================================
+    // INITIALIZATION & LIFECYCLE
+    // ========================================================
+    document.addEventListener('DOMContentLoaded', () => {
+      initAudio();
+      checkSavedSession();
+      initLeafletMap();
+      bindEventListeners();
+    });
+
+    function initAudio() {
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+          audioCtx = new AudioContextClass();
+        }
+      } catch (e) {
+        console.warn('Web Audio not supported:', e);
+      }
+    }
+
+    function checkSavedSession() {
+      const savedToken = localStorage.getItem('aegis_token');
+      const savedUserStr = localStorage.getItem('aegis_user');
+
+      if (savedToken && savedUserStr) {
+        try {
+          authToken = savedToken;
+          currentUser = JSON.parse(savedUserStr);
+          onUserAuthenticated();
+          return;
+        } catch (e) {
+          localStorage.removeItem('aegis_token');
+          localStorage.removeItem('aegis_user');
+        }
+      }
+
+      // Show Login Screen
+      document.getElementById('auth-overlay').style.display = 'flex';
+      document.getElementById('user-pill-container').style.display = 'none';
+    }
+
+    function onUserAuthenticated() {
+      document.getElementById('auth-overlay').style.display = 'none';
+      document.getElementById('user-pill-container').style.display = 'flex';
+
+      const initial = currentUser.displayName ? currentUser.displayName.charAt(0).toUpperCase() : 'U';
+      document.getElementById('nav-user-initial').textContent = initial;
+      document.getElementById('nav-user-name').textContent = currentUser.displayName || 'Citizen';
+      document.getElementById('nav-user-phone').textContent = currentUser.verifiedPhoneNumber || '+91 User';
+
+      showToast(`Welcome back, ${currentUser.displayName || 'User'}!`, 'success');
+      loadTrustedContacts();
+    }
+
+    // ========================================================
+    // LEAFLET MAP INITIALIZATION & GPS
+    // ========================================================
+    function initLeafletMap() {
+      chennaiMap = L.map('chennai-map', {
+        zoomControl: true,
+        attributionControl: false
+      }).setView([currentCoords.lat, currentCoords.lng], 13);
+
+      // OpenStreetMap Tiles (High-contrast, clean)
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19
+      }).addTo(chennaiMap);
+
+      // Add user location pulsing marker
+      const userIcon = L.divIcon({
+        className: 'user-pin-icon',
+        html: '<div style="width: 20px; height: 20px; background: #06b6d4; border: 3px solid #fff; border-radius: 50%; box-shadow: 0 0 15px #06b6d4;"></div>',
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+      });
+
+      userMarker = L.marker([currentCoords.lat, currentCoords.lng], { icon: userIcon }).addTo(chennaiMap);
+      userMarker.bindPopup('<strong>Your Current Position</strong><br>Chennai Metropolitan Area').openPopup();
+
+      // Render Emergency Facilities
+      renderFacilityMarkers();
+
+      // Attempt live geolocation
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            currentCoords.lat = pos.coords.latitude;
+            currentCoords.lng = pos.coords.longitude;
+            userMarker.setLatLng([currentCoords.lat, currentCoords.lng]);
+            chennaiMap.setView([currentCoords.lat, currentCoords.lng], 14);
+          },
+          (err) => {
+            console.log('Using default Chennai coordinates:', err.message);
+          },
+          { timeout: 8000 }
+        );
+      }
+    }
+
+    function renderFacilityMarkers() {
+      // Clear existing
+      facilityMarkers.forEach(m => chennaiMap.removeLayer(m));
+      facilityMarkers = [];
+
+      CHENNAI_POIS.forEach(poi => {
+        let color = '#3b82f6';
+        let iconClass = 'fa-building-shield';
+
+        if (poi.cat === 'HOSPITAL') {
+          color = '#ef4444';
+          iconClass = 'fa-hospital';
+        } else if (poi.cat === 'PHARMACY') {
+          color = '#10b981';
+          iconClass = 'fa-pills';
+        }
+
+        const icon = L.divIcon({
+          className: 'poi-pin',
+          html: `<div style="background: ${color}; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.8rem; border: 2px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.5);"><i class="fa-solid ${iconClass}"></i></div>`,
+          iconSize: [28, 28],
+          iconAnchor: [14, 14]
+        });
+
+        const marker = L.marker([poi.lat, poi.lng], { icon }).addTo(chennaiMap);
+        marker.bindPopup(`
+          <div style="font-family: inherit; font-size: 0.85rem; line-height: 1.4;">
+            <strong style="color: ${color};">${poi.name}</strong><br>
+            <span style="font-size: 0.75rem; color: #64748b;">${poi.cat} &bull; 24x7 Operational</span><br>
+            <a href="tel:${poi.phone}" style="display: inline-block; margin-top: 0.35rem; color: #2563eb; font-weight: 600; text-decoration: none;">
+              <i class="fa-solid fa-phone"></i> ${poi.phone}
+            </a>
+          </div>
+        `);
+        facilityMarkers.push(marker);
+      });
+    }
+
+    // ========================================================
+    // TRUSTED CONTACTS MANAGEMENT (REAL USER CRUD)
+    // ========================================================
+    async function loadTrustedContacts() {
+      const container = document.getElementById('contacts-list-container');
+      const countEl = document.getElementById('contacts-count');
+
+      try {
+        const res = await fetch(`${API_BASE}/emergency-contacts`, {
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+
+        const data = await res.json();
+        const contacts = data.data || [];
+
+        countEl.textContent = `${contacts.length} Saved`;
+
+        if (contacts.length === 0) {
+          container.innerHTML = `
+            <div style="text-align: center; padding: 1.5rem; color: var(--text-dim); font-size: 0.85rem;">
+              <i class="fa-solid fa-user-plus" style="font-size: 1.8rem; margin-bottom: 0.5rem; opacity: 0.5;"></i>
+              <p>No known contacts saved yet.<br>Click "Add Known Contact" below to add your family or friends.</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = contacts.map(c => `
+          <div class="contact-item" id="contact-${c.id}">
+            <div class="contact-info">
+              <div class="contact-name">
+                <span>${escapeHtml(c.display_name)}</span>
+                <span class="contact-relation-badge">${c.relationship}</span>
+                ${c.is_primary ? '<span style="font-size: 0.65rem; background: rgba(16,185,129,0.2); color: #10b981; padding: 0.1rem 0.4rem; border-radius: 999px; font-weight: 700;">PRIMARY</span>' : ''}
+              </div>
+              <div class="contact-phone">${escapeHtml(c.phone_number)}</div>
+            </div>
+            <div class="contact-actions">
+              <a href="tel:${c.phone_number}" class="action-icon-btn" title="Call Contact">
+                <i class="fa-solid fa-phone" style="color: var(--success);"></i>
+              </a>
+              <button class="action-icon-btn delete-btn" onclick="deleteKnownContact('${c.id}')" title="Delete Contact">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        `).join('');
+
+      } catch (err) {
+        console.error('Failed to load contacts:', err);
+        container.innerHTML = `<div style="color: var(--danger); font-size: 0.82rem; padding: 0.5rem;">Could not load contacts. Please verify connection.</div>`;
+      }
+    }
+
+    async function saveKnownContact() {
+      const name = document.getElementById('new-contact-name').value.trim();
+      const phoneInput = document.getElementById('new-contact-phone').value.trim();
+      const relationship = document.getElementById('new-contact-rel').value;
+      const isPrimary = document.getElementById('new-contact-primary').checked;
+
+      if (!name) {
+        showToast('Please enter the contact name.', 'danger');
+        return;
+      }
+      if (!phoneInput || phoneInput.length < 10) {
+        showToast('Please enter a valid 10-digit mobile number.', 'danger');
+        return;
+      }
+
+      const formattedPhone = phoneInput.startsWith('+') ? phoneInput : `+91${phoneInput.slice(-10)}`;
+
+      try {
+        const res = await fetch(`${API_BASE}/emergency-contacts`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({
+            displayName: name,
+            phoneNumber: formattedPhone,
+            relationship,
+            isPrimary,
+            canReceiveAlerts: true
+          })
+        });
+
+        const result = await res.json();
+        if (res.ok) {
+          showToast(`Saved ${name} to your trusted contacts!`, 'success');
+          closeModal('modal-add-contact');
+          document.getElementById('new-contact-name').value = '';
+          document.getElementById('new-contact-phone').value = '';
+          document.getElementById('new-contact-primary').checked = false;
+          loadTrustedContacts();
+        } else {
+          showToast(result.message || 'Failed to add contact.', 'danger');
+        }
+      } catch (e) {
+        showToast('Network error while saving contact.', 'danger');
+      }
+    }
+
+    async function deleteKnownContact(contactId) {
+      if (!confirm('Are you sure you want to remove this trusted contact?')) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/emergency-contacts/${contactId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+
+        if (res.ok) {
+          showToast('Contact deleted.', 'success');
+          loadTrustedContacts();
+        } else {
+          showToast('Could not delete contact.', 'danger');
+        }
+      } catch (e) {
+        showToast('Network error deleting contact.', 'danger');
+      }
+    }
+
+    // ========================================================
+    // SOS TRIGGER & SIREN WORKFLOW
+    // ========================================================
+    let sosHoldTimer = null;
+
+    function startSosHold() {
+      const sosBtn = document.getElementById('btn-sos-trigger');
+      sosBtn.style.transform = 'scale(0.92)';
+
+      sosHoldTimer = setTimeout(() => {
+        executeSosTrigger();
+      }, 3000);
+    }
+
+    function cancelSosHold() {
+      if (sosHoldTimer) {
+        clearTimeout(sosHoldTimer);
+        sosHoldTimer = null;
+      }
+      const sosBtn = document.getElementById('btn-sos-trigger');
+      sosBtn.style.transform = 'scale(1)';
+    }
+
+    async function executeSosTrigger() {
+      if (activeAlertId) {
+        showToast('An active emergency alert is already broadcasting.', 'danger');
+        return;
+      }
+
+      // Play Siren if checked
+      if (document.getElementById('chk-siren').checked) {
+        playEmergencySiren();
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/sos/trigger`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({
+            latitude: currentCoords.lat,
+            longitude: currentCoords.lng,
+            accuracyMeters: 10,
+            triggerMethod: 'HOLD_BUTTON'
+          })
+        });
+
+        const result = await res.json();
+        if (res.ok && result.data) {
+          activeAlertId = result.data.alert.id;
+          const banner = document.getElementById('sos-active-banner');
+          const details = document.getElementById('sos-banner-details');
+          
+          banner.style.display = 'block';
+          details.textContent = `Alert ID: ${activeAlertId.slice(0, 8)}... broadcasted at ${currentCoords.lat.toFixed(4)}, ${currentCoords.lng.toFixed(4)}. Emergency SMS dispatched to your contacts!`;
+          
+          showToast('EMERGENCY SOS DISPATCHED TO CONTACTS!', 'danger');
+        } else {
+          showToast(result.message || 'Error triggering SOS dispatch.', 'danger');
+        }
+      } catch (err) {
+        showToast('Error connecting to emergency backend.', 'danger');
+      }
+    }
+
+    async function resolveActiveSos() {
+      if (!activeAlertId) return;
+
+      stopEmergencySiren();
+
+      try {
+        const res = await fetch(`${API_BASE}/sos/resolve`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({
+            alertId: activeAlertId,
+            resolutionNotes: 'User safe and confirmed in web portal.'
+          })
+        });
+
+        if (res.ok) {
+          activeAlertId = null;
+          document.getElementById('sos-active-banner').style.display = 'none';
+          showToast('Emergency alert resolved. Glad you are safe!', 'success');
+        }
+      } catch (e) {
+        showToast('Failed to resolve alert.', 'danger');
+      }
+    }
+
+    function playEmergencySiren() {
+      if (!audioCtx) return;
+      try {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        
+        sirenOscillator = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        sirenOscillator.type = 'sawtooth';
+        sirenOscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+        
+        // Siren frequency sweep
+        let up = true;
+        setInterval(() => {
+          if (!sirenOscillator) return;
+          sirenOscillator.frequency.setValueAtTime(up ? 950 : 600, audioCtx.currentTime);
+          up = !up;
+        }, 400);
+
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        sirenOscillator.connect(gain);
+        gain.connect(audioCtx.destination);
+        sirenOscillator.start();
+      } catch (e) {
+        console.warn('Audio siren error:', e);
+      }
+    }
+
+    function stopEmergencySiren() {
+      if (sirenOscillator) {
+        try {
+          sirenOscillator.stop();
+          sirenOscillator.disconnect();
+        } catch(e) {}
+        sirenOscillator = null;
+      }
+    }
+
+    // ========================================================
+    // SAFE ROUTE COMPARISON (RAMAPURAM TO KOYAMBEDU)
+    // ========================================================
+    async function compareSafeRoutes() {
+      const originVal = document.getElementById('route-origin').value.split(',');
+      const destVal = document.getElementById('route-dest').value.split(',');
+
+      const origin = { lat: parseFloat(originVal[0]), lng: parseFloat(originVal[1]) };
+      const dest = { lat: parseFloat(destVal[0]), lng: parseFloat(destVal[1]) };
+
+      try {
+        const res = await fetch(`${API_BASE}/routes/compare`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({
+            originLat: origin.lat,
+            originLng: origin.lng,
+            destLat: dest.lat,
+            destLng: dest.lng
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.data) {
+          const comp = data.data;
+          
+          document.getElementById('safe-score-val').textContent = `${comp.recommendedSafeRoute.safetyScore}/100`;
+          document.getElementById('safe-dist').textContent = `${(comp.recommendedSafeRoute.distanceMeters / 1000).toFixed(1)} km (${Math.round(comp.recommendedSafeRoute.estimatedDurationSeconds / 60)} mins)`;
+          document.getElementById('safe-light').textContent = `${Math.round(comp.recommendedSafeRoute.safetyBreakdown.lightingFactor * 100)}% Audited Illumination`;
+          document.getElementById('safe-facilities').textContent = `${comp.recommendedSafeRoute.safetyBreakdown.facilityDensityFactor * 5} Verified Emergency Services`;
+
+          document.getElementById('fast-score-val').textContent = `${comp.fastestAlternative.safetyScore}/100`;
+          document.getElementById('fast-dist').textContent = `${(comp.fastestAlternative.distanceMeters / 1000).toFixed(1)} km (${Math.round(comp.fastestAlternative.estimatedDurationSeconds / 60)} mins)`;
+          document.getElementById('fast-light').textContent = `${Math.round(comp.fastestAlternative.safetyBreakdown.lightingFactor * 100)}% Audited Illumination`;
+
+          // Draw Safe Route Polyline on Map
+          if (comp.recommendedSafeRoute.polyline && comp.recommendedSafeRoute.polyline.length > 0) {
+            if (routePolyline) chennaiMap.removeLayer(routePolyline);
+            
+            const latlngs = comp.recommendedSafeRoute.polyline.map(pt => [pt.lat, pt.lng]);
+            routePolyline = L.polyline(latlngs, {
+              color: '#10b981',
+              weight: 5,
+              opacity: 0.85,
+              dashArray: '8, 8'
+            }).addTo(chennaiMap);
+
+            chennaiMap.fitBounds(routePolyline.getBounds(), { padding: [50, 50] });
+          }
+
+          showToast('Safe route evaluated with Chennai municipal data!', 'success');
+        }
+      } catch (err) {
+        showToast('Error querying safe route engine.', 'danger');
+      }
+    }
+
+    // ========================================================
+    // FAKE CALL SIMULATOR (AUDIO + SCREEN)
+    // ========================================================
+    function triggerFakeCall() {
+      showToast('Incoming fake call in 3 seconds...', 'success');
+      setTimeout(() => {
+        document.getElementById('fake-call-screen').style.display = 'flex';
+        playPhoneRingAudio();
+      }, 3000);
+    }
+
+    function playPhoneRingAudio() {
+      if (!audioCtx) return;
+      try {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        ringOscillator = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        ringOscillator.type = 'sine';
+        ringOscillator.frequency.setValueAtTime(440, audioCtx.currentTime);
+        
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        ringOscillator.connect(gain);
+        gain.connect(audioCtx.destination);
+        ringOscillator.start();
+      } catch (e) {
+        console.warn('Audio ring error:', e);
+      }
+    }
+
+    function stopPhoneRingAudio() {
+      if (ringOscillator) {
+        try {
+          ringOscillator.stop();
+          ringOscillator.disconnect();
+        } catch(e) {}
+        ringOscillator = null;
+      }
+    }
+
+    function declineFakeCall() {
+      stopPhoneRingAudio();
+      document.getElementById('fake-call-screen').style.display = 'none';
+      document.getElementById('fake-call-status').textContent = 'Incoming Call...';
+    }
+
+    function acceptFakeCall() {
+      stopPhoneRingAudio();
+      document.getElementById('fake-call-status').textContent = 'Call Connected (00:04)... "Hey, where are you? We are waiting at the main entrance!"';
+      showToast('Fake call connected. Use this conversation to exit.', 'success');
+      setTimeout(() => {
+        declineFakeCall();
+      }, 6000);
+    }
+
+    // ========================================================
+    // LIVE LOCATION SESSION GENERATOR
+    // ========================================================
+    async function activateLiveLocation() {
+      const minutes = parseInt(document.getElementById('share-duration').value, 10);
+
+      try {
+        const res = await fetch(`${API_BASE}/location-sessions/start`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({
+            durationMinutes: minutes,
+            initialLat: currentCoords.lat,
+            initialLng: currentCoords.lng
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.data) {
+          const session = data.data;
+          const trackingUrl = `${window.location.origin}/track.html?token=${session.rawToken}`;
+          
+          document.getElementById('share-link-input').value = trackingUrl;
+          showToast(`Live sharing active for ${minutes} mins!`, 'success');
+        } else {
+          showToast(data.message || 'Could not create location session.', 'danger');
+        }
+      } catch (e) {
+        showToast('Error activating live location session.', 'danger');
+      }
+    }
+
+    // ========================================================
+    // AUTHENTICATION WORKFLOW (PHONE NUMBER + OTP)
+    // ========================================================
+    async function requestPhoneOtp() {
+      const phone = document.getElementById('input-phone').value.trim();
+      if (!phone || phone.length < 10) {
+        showToast('Please enter a valid 10-digit mobile number.', 'danger');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/users/auth/otp-request`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phoneNumber: phone })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          document.getElementById('auth-step-phone').style.display = 'none';
+          document.getElementById('auth-step-otp').style.display = 'block';
+          document.getElementById('input-otp').value = data.data.demoOtp || '123456';
+          document.getElementById('input-otp').focus();
+          showToast('OTP code sent successfully!', 'success');
+        } else {
+          showToast(data.message || 'Could not request OTP.', 'danger');
+        }
+      } catch (e) {
+        showToast('Network error while requesting OTP.', 'danger');
+      }
+    }
+
+    async function verifyPhoneOtp() {
+      const phone = document.getElementById('input-phone').value.trim();
+      const otp = document.getElementById('input-otp').value.trim();
+      const displayName = document.getElementById('input-display-name').value.trim();
+
+      if (!otp) {
+        showToast('Please enter the 6-digit OTP code.', 'danger');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/users/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phoneNumber: phone,
+            otp,
+            displayName
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.data) {
+          authToken = data.data.token;
+          currentUser = data.data.user;
+
+          localStorage.setItem('aegis_token', authToken);
+          localStorage.setItem('aegis_user', JSON.stringify(currentUser));
+
+          onUserAuthenticated();
+        } else {
+          showToast(data.message || 'Invalid verification code.', 'danger');
+        }
+      } catch (e) {
+        showToast('Error verifying credentials.', 'danger');
+      }
+    }
+
+    function quickDemoLogin() {
+      document.getElementById('input-phone').value = '9840112233';
+      document.getElementById('input-otp').value = '123456';
+      document.getElementById('input-display-name').value = 'Shiv Bharath';
+      verifyPhoneOtp();
+    }
+
+    function logoutUser() {
+      localStorage.removeItem('aegis_token');
+      localStorage.removeItem('aegis_user');
+      authToken = null;
+      currentUser = null;
+      document.getElementById('auth-overlay').style.display = 'flex';
+      document.getElementById('auth-step-phone').style.display = 'block';
+      document.getElementById('auth-step-otp').style.display = 'none';
+      document.getElementById('user-pill-container').style.display = 'none';
+      showToast('Logged out of AEGIS portal.', 'success');
+    }
+
+    // ========================================================
+    // MODAL & EVENT LISTENERS
+    // ========================================================
+    function openModal(id) {
+      document.getElementById(id).style.display = 'flex';
+    }
+    function closeModal(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+
+    function bindEventListeners() {
+      // Auth Events
+      document.getElementById('btn-request-otp').addEventListener('click', requestPhoneOtp);
+      document.getElementById('btn-verify-otp').addEventListener('click', verifyPhoneOtp);
+      document.getElementById('btn-quick-demo').addEventListener('click', quickDemoLogin);
+      document.getElementById('btn-change-phone').addEventListener('click', () => {
+        document.getElementById('auth-step-otp').style.display = 'none';
+        document.getElementById('auth-step-phone').style.display = 'block';
+      });
+      document.getElementById('btn-logout').addEventListener('click', logoutUser);
+
+      // Contact Modal Events
+      document.getElementById('btn-open-add-contact').addEventListener('click', () => openModal('modal-add-contact'));
+      document.getElementById('btn-close-contact-modal').addEventListener('click', () => closeModal('modal-add-contact'));
+      document.getElementById('btn-save-contact').addEventListener('click', saveKnownContact);
+
+      // Live Share Modal Events
+      document.getElementById('tool-live-location').addEventListener('click', () => openModal('modal-live-share'));
+      document.getElementById('btn-close-share-modal').addEventListener('click', () => closeModal('modal-live-share'));
+      document.getElementById('btn-start-share').addEventListener('click', activateLiveLocation);
+      document.getElementById('btn-copy-share-link').addEventListener('click', () => {
+        const input = document.getElementById('share-link-input');
+        if (input.value) {
+          navigator.clipboard.writeText(input.value);
+          showToast('Tracking link copied to clipboard!', 'success');
+        }
+      });
+
+      // SOS Events
+      const sosBtn = document.getElementById('btn-sos-trigger');
+      sosBtn.addEventListener('mousedown', startSosHold);
+      sosBtn.addEventListener('mouseup', cancelSosHold);
+      sosBtn.addEventListener('mouseleave', cancelSosHold);
+      sosBtn.addEventListener('touchstart', startSosHold);
+      sosBtn.addEventListener('touchend', cancelSosHold);
+      sosBtn.addEventListener('click', executeSosTrigger);
+      document.getElementById('btn-resolve-sos').addEventListener('click', resolveActiveSos);
+
+      // Route Comparison Events
+      document.getElementById('btn-compare-routes').addEventListener('click', compareSafeRoutes);
+
+      // Tool Events
+      document.getElementById('tool-fake-call').addEventListener('click', triggerFakeCall);
+      document.getElementById('btn-decline-fake-call').addEventListener('click', declineFakeCall);
+      document.getElementById('btn-accept-fake-call').addEventListener('click', acceptFakeCall);
+
+      // Map Controls
+      document.getElementById('btn-locate-me').addEventListener('click', () => {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(pos => {
+            currentCoords.lat = pos.coords.latitude;
+            currentCoords.lng = pos.coords.longitude;
+            userMarker.setLatLng([currentCoords.lat, currentCoords.lng]);
+            chennaiMap.setView([currentCoords.lat, currentCoords.lng], 15);
+            showToast('Centered on your GPS location in Chennai.', 'success');
+          });
+        }
+      });
+    }
+
+    // Helper: Toast Notifications
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast-msg ${type}`;
+      
+      let icon = 'fa-info-circle';
+      if (type === 'success') icon = 'fa-check-circle';
+      if (type === 'danger') icon = 'fa-triangle-exclamation';
+
+      toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${escapeHtml(msg)}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>

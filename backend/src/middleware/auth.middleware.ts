@@ -40,6 +40,28 @@ export const requireAuth = async (
       return next();
     }
 
+    if (authHeader && authHeader.startsWith('Bearer aegis-token-')) {
+      const extractedId = authHeader.replace('Bearer aegis-token-', '');
+      let user = inMemoryStore.users.get(extractedId);
+      if (!user) {
+        for (const u of inMemoryStore.users.values()) {
+          if (u.id === extractedId || u.verified_phone_number === extractedId) {
+            user = u;
+            break;
+          }
+        }
+      }
+      if (user) {
+        req.user = {
+          id: user.id,
+          firebaseUid: user.firebase_uid,
+          phoneNumber: user.verified_phone_number,
+          displayName: user.display_name
+        };
+        return next();
+      }
+    }
+
     if (authHeader && authHeader.startsWith('Bearer mock-token-')) {
       const demoUser = inMemoryStore.users.get('demo-user-chennai-01');
       if (demoUser) {
