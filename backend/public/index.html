@@ -718,6 +718,206 @@
       color: var(--bg-dark);
     }
 
+    /* Google Maps Navigation Action Buttons */
+    .btn-gmaps {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.84rem;
+      font-weight: 700;
+      text-decoration: none;
+      margin-top: 0.85rem;
+      transition: var(--transition);
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .btn-gmaps-safe {
+      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+      color: #ffffff !important;
+      border: 1px solid rgba(16, 185, 129, 0.5);
+    }
+
+    .btn-gmaps-safe:hover {
+      background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
+      transform: translateY(-2px);
+    }
+
+    .btn-gmaps-fast {
+      background: rgba(30, 41, 59, 0.85);
+      color: #93c5fd !important;
+      border: 1px solid rgba(59, 130, 246, 0.35);
+    }
+
+    .btn-gmaps-fast:hover {
+      background: rgba(59, 130, 246, 0.25);
+      border-color: var(--primary);
+      color: #ffffff !important;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(59, 130, 246, 0.35);
+    }
+
+    /* SOS Charging Ring and Progress Bar */
+    .sos-charge-ring {
+      position: absolute;
+      width: 160px;
+      height: 160px;
+      top: 5px;
+      left: 5px;
+      transform: rotate(-90deg);
+      pointer-events: none;
+      z-index: 6;
+    }
+
+    .charge-circle-bg {
+      fill: none;
+      stroke: rgba(239, 68, 68, 0.2);
+      stroke-width: 6;
+    }
+
+    .charge-circle-bar {
+      fill: none;
+      stroke: #f59e0b;
+      stroke-width: 6;
+      stroke-dasharray: 465;
+      stroke-dashoffset: 465;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.05s linear;
+    }
+
+    .sos-progress-container {
+      width: 100%;
+      max-width: 220px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-full);
+      margin: 0.65rem auto 0;
+      overflow: hidden;
+      display: none;
+    }
+
+    .sos-progress-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
+      border-radius: var(--radius-full);
+      transition: width 0.05s linear;
+    }
+
+    .sos-gmaps-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.6);
+      color: #fca5a5 !important;
+      padding: 0.55rem 0.85rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: var(--transition);
+      margin-top: 0.5rem;
+      width: 100%;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+
+    .sos-gmaps-btn:hover {
+      background: #ef4444;
+      color: #ffffff !important;
+      box-shadow: 0 4px 15px var(--danger-glow);
+    }
+
+    /* OTP Autofill & Countdown Styles */
+    .otp-autofill-pill {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #34d399;
+      padding: 0.45rem 0.85rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      transition: var(--transition);
+      margin-top: 0.5rem;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .otp-autofill-pill:hover {
+      background: rgba(16, 185, 129, 0.25);
+      border-color: #10b981;
+      transform: translateY(-1px);
+    }
+
+    .map-btn.active {
+      background: var(--primary) !important;
+      border-color: var(--primary) !important;
+      box-shadow: 0 0 12px var(--primary-glow) !important;
+    }
+
+    /* Leaflet Layer Switcher & Dark Popups */
+    .leaflet-control-layers {
+      background: rgba(10, 15, 29, 0.95) !important;
+      backdrop-filter: blur(12px) !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      color: #f8fafc !important;
+      border-radius: var(--radius-sm) !important;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5) !important;
+      font-family: 'Inter', sans-serif !important;
+      font-size: 0.8rem !important;
+      padding: 0.6rem 0.85rem !important;
+    }
+
+    .leaflet-control-layers-toggle {
+      background-color: rgba(10, 15, 29, 0.9) !important;
+      border-radius: var(--radius-sm) !important;
+    }
+
+    .leaflet-control-layers-base label {
+      cursor: pointer;
+      margin: 0.35rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-weight: 500;
+      color: #e2e8f0;
+    }
+
+    .leaflet-popup-content-wrapper {
+      background: #0f172a !important;
+      color: #f8fafc !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      border-radius: var(--radius-sm) !important;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6) !important;
+    }
+
+    .leaflet-popup-tip {
+      background: #0f172a !important;
+    }
+
+    .live-pulse-badge {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      background: #ef4444;
+      color: #fff;
+      padding: 0.15rem 0.45rem;
+      border-radius: var(--radius-full);
+      animation: pulseAnim 1.5s infinite;
+    }
+
     /* Known Trusted Contacts Section */
     .contacts-list {
       display: flex;
@@ -1107,9 +1307,15 @@
             <span style="font-size: 0.75rem; color: var(--cyan); cursor: pointer;" id="btn-change-phone">Change Phone</span>
           </div>
           <input type="text" id="input-otp" class="form-control" placeholder="123456" maxlength="6" style="letter-spacing: 0.25em; text-align: center; font-size: 1.3rem; font-weight: 700;">
-          <div style="font-size: 0.75rem; color: var(--success); margin-top: 0.35rem; display: flex; align-items: center; gap: 0.4rem;">
-            <i class="fa-solid fa-circle-check"></i>
-            <span>Development Verification OTP: <strong>123456</strong></span>
+          
+          <button type="button" id="btn-autofill-otp" class="otp-autofill-pill" title="Click to auto-populate the test OTP">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <span>Development Code: <strong>123456</strong> (Tap to Auto-fill)</span>
+          </button>
+
+          <div id="otp-timer-row" style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+            <span>Resend code in <strong id="otp-countdown" style="color: var(--cyan); font-family: monospace;">30</strong>s</span>
+            <button type="button" id="btn-resend-otp" disabled style="background: none; border: none; color: var(--cyan); font-size: 0.78rem; cursor: pointer; text-decoration: underline; opacity: 0.4;">Resend OTP</button>
           </div>
         </div>
 
@@ -1162,17 +1368,17 @@
               <i class="fa-solid fa-location-crosshairs"></i>
               <span>Locate Me</span>
             </button>
-            <button class="map-btn" id="btn-toggle-police" title="Show/Hide Police">
-              <i class="fa-solid fa-building-shield" style="color: #3b82f6;"></i>
-              <span>Police Stations</span>
+            <button class="map-btn active" id="btn-toggle-police" title="Toggle Police Stations">
+              <i class="fa-solid fa-building-shield" style="color: #60a5fa;"></i>
+              <span>Police</span>
             </button>
-            <button class="map-btn" id="btn-toggle-hospitals" title="Show/Hide Hospitals">
-              <i class="fa-solid fa-hospital" style="color: #ef4444;"></i>
+            <button class="map-btn active" id="btn-toggle-hospitals" title="Toggle Hospitals">
+              <i class="fa-solid fa-hospital" style="color: #f87171;"></i>
               <span>Hospitals</span>
             </button>
-            <button class="map-btn" id="btn-toggle-pharmacies" title="Show/Hide Pharmacies">
-              <i class="fa-solid fa-pills" style="color: #10b981;"></i>
-              <span>24x7 Pharmacies</span>
+            <button class="map-btn active" id="btn-toggle-pharmacies" title="Toggle Pharmacies">
+              <i class="fa-solid fa-pills" style="color: #34d399;"></i>
+              <span>Pharmacies</span>
             </button>
           </div>
 
@@ -1273,6 +1479,13 @@
             <small style="color: var(--text-dim); font-size: 0.75rem;">
               Audited route maintains continuous LED streetlighting and high density of operational public emergency services.
             </small>
+
+            <!-- Task 4: Google Maps Navigation Button -->
+            <a id="btn-gmaps-safe" href="https://www.google.com/maps/dir/?api=1&origin=13.0326,80.1706&destination=13.0694,80.1948&travelmode=driving" target="_blank" class="btn-gmaps btn-gmaps-safe" title="Open Safe Route in Google Maps">
+              <i class="fa-solid fa-diamond-turn-right"></i>
+              <span>Open Safe Route in Google Maps</span>
+              <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.75rem; margin-left: auto;"></i>
+            </a>
           </div>
 
           <div class="route-card" id="fast-route-card">
@@ -1298,6 +1511,13 @@
             <small style="color: var(--text-dim); font-size: 0.75rem;">
               Contains 2 dimly lit road segments and isolated underpasses during night hours.
             </small>
+
+            <!-- Task 4: Google Maps Navigation Button -->
+            <a id="btn-gmaps-fast" href="https://www.google.com/maps/dir/?api=1&origin=13.0326,80.1706&destination=13.0694,80.1948&travelmode=driving" target="_blank" class="btn-gmaps btn-gmaps-fast" title="Open Fastest Route in Google Maps">
+              <i class="fa-solid fa-bolt"></i>
+              <span>Open Fastest Route in Google Maps</span>
+              <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.75rem; margin-left: auto;"></i>
+            </a>
           </div>
         </div>
       </div>
@@ -1316,33 +1536,53 @@
 
         <div class="sos-button-wrapper">
           <div class="sos-pulse-ring"></div>
-          <button class="sos-btn" id="btn-sos-trigger">
+          <!-- SVG Circular Progress Charger for 3-Second Press-and-Hold -->
+          <svg class="sos-charge-ring" viewBox="0 0 160 160">
+            <circle class="charge-circle-bg" cx="80" cy="80" r="74" />
+            <circle class="charge-circle-bar" id="sos-charge-bar" cx="80" cy="80" r="74" />
+          </svg>
+          <button class="sos-btn" id="btn-sos-trigger" type="button">
             <span>SOS</span>
-            <span class="sos-subtext">HOLD 3 SEC</span>
+            <span class="sos-subtext" id="sos-btn-label">HOLD 3 SEC</span>
           </button>
         </div>
 
+        <!-- Charging Horizontal Progress Bar -->
+        <div class="sos-progress-container" id="sos-progress-container">
+          <div class="sos-progress-bar" id="sos-progress-bar"></div>
+        </div>
+
         <div class="sos-instructions">
-          <i class="fa-solid fa-hand-pointer" style="margin-right: 4px;"></i> Press & hold or click to trigger live dispatch
+          <i class="fa-solid fa-hand-pointer" style="margin-right: 4px;"></i> Press & hold 3s (or tap) to trigger emergency dispatch
         </div>
 
         <!-- Audio Siren Toggle -->
         <div style="margin-top: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.65rem;">
-          <input type="checkbox" id="chk-siren" style="cursor: pointer;">
+          <input type="checkbox" id="chk-siren" style="cursor: pointer;" checked>
           <label for="chk-siren" style="font-size: 0.82rem; color: var(--text-muted); cursor: pointer;">
             Sound loud emergency siren on trigger
           </label>
         </div>
 
-        <!-- Active SOS Alert Banner -->
+        <!-- Active SOS Alert Banner with Google Maps Live Link -->
         <div class="sos-status-alert" id="sos-active-banner">
-          <div style="display: flex; align-items: center; gap: 0.6rem; color: #ef4444; font-weight: 700; font-size: 0.95rem;">
-            <i class="fa-solid fa-triangle-exclamation"></i>
-            <span>SOS ALERT BROADCAST ACTIVE</span>
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 0.6rem; color: #ef4444; font-weight: 700; font-size: 0.95rem;">
+              <i class="fa-solid fa-triangle-exclamation fa-beat"></i>
+              <span>SOS ALERT BROADCAST ACTIVE</span>
+            </div>
+            <span class="live-pulse-badge">LIVE DISPATCH</span>
           </div>
-          <p style="font-size: 0.8rem; color: #fff; margin-top: 0.4rem;" id="sos-banner-details">
+          <p style="font-size: 0.8rem; color: #fff; margin-top: 0.4rem; line-height: 1.4;" id="sos-banner-details">
             Emergency alert dispatched with GPS: 13.0827, 80.2707. Trusted contacts notified via SMS.
           </p>
+          <div style="margin-top: 0.6rem;">
+            <a id="sos-gmaps-link" href="https://www.google.com/maps?q=13.0827,80.2707" target="_blank" class="sos-gmaps-btn" title="Open Coordinates in Google Maps">
+              <i class="fa-solid fa-map-location-dot"></i>
+              <span>View Emergency Location in Google Maps</span>
+              <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.72rem; margin-left: auto;"></i>
+            </a>
+          </div>
           <button class="btn-resolve-sos" id="btn-resolve-sos">
             <i class="fa-solid fa-circle-check" style="margin-right: 4px;"></i> I Am Safe — Cancel Alert
           </button>
@@ -1615,7 +1855,18 @@
 
       showToast(`Welcome back, ${currentUser.displayName || 'User'}!`, 'success');
       loadTrustedContacts();
+
+      // Recalculate map dimensions now that the dashboard is visible
+      setTimeout(() => {
+        if (chennaiMap) chennaiMap.invalidateSize();
+      }, 200);
     }
+
+    // Map Layer & Filter State
+    let showPolice = true;
+    let showHospitals = true;
+    let showPharmacies = true;
+    let mapLayersControl = null;
 
     // ========================================================
     // LEAFLET MAP INITIALIZATION & GPS
@@ -1623,29 +1874,68 @@
     function initLeafletMap() {
       chennaiMap = L.map('chennai-map', {
         zoomControl: true,
-        attributionControl: false
+        attributionControl: true
       }).setView([currentCoords.lat, currentCoords.lng], 13);
 
-      // High-performance, unrestricted CartoDB Dark Matter tiles for cybersecurity command center
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      // Primary Default: Crystal-Clear CartoDB Voyager Streets
+      const baseVoyager = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20
+      });
+
+      // Tactical Dark Mode
+      const baseDark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
         subdomains: 'abcd',
         maxZoom: 20
-      }).addTo(chennaiMap);
+      });
+
+      // High-Resolution Satellite Layer
+      const baseSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP',
+        maxZoom: 19
+      });
+
+      // Add default base layer
+      baseVoyager.addTo(chennaiMap);
+
+      const baseMaps = {
+        "🌟 Clear Street Map (Voyager)": baseVoyager,
+        "🌙 Tactical Dark Mode": baseDark,
+        "🛰️ Satellite Imagery": baseSatellite
+      };
+
+      mapLayersControl = L.control.layers(baseMaps, null, { position: 'topright' }).addTo(chennaiMap);
 
       // Add user location pulsing marker
       const userIcon = L.divIcon({
         className: 'user-pin-icon',
-        html: '<div style="width: 20px; height: 20px; background: #06b6d4; border: 3px solid #fff; border-radius: 50%; box-shadow: 0 0 15px #06b6d4;"></div>',
-        iconSize: [20, 20],
-        iconAnchor: [10, 10]
+        html: '<div style="width: 22px; height: 22px; background: #06b6d4; border: 3px solid #fff; border-radius: 50%; box-shadow: 0 0 15px #06b6d4;"></div>',
+        iconSize: [22, 22],
+        iconAnchor: [11, 11]
       });
 
       userMarker = L.marker([currentCoords.lat, currentCoords.lng], { icon: userIcon }).addTo(chennaiMap);
-      userMarker.bindPopup('<strong>Your Current Position</strong><br>Chennai Metropolitan Area').openPopup();
+      userMarker.bindPopup(`
+        <div style="font-family: inherit; font-size: 0.85rem; line-height: 1.4; color: #f8fafc;">
+          <strong style="color: #06b6d4; font-size: 0.92rem;">Your Current Position</strong><br>
+          <span style="font-size: 0.75rem; color: #94a3b8;">Chennai Metropolitan Area</span><br>
+          <span style="font-size: 0.72rem; font-family: monospace; color: #38bdf8;">${currentCoords.lat.toFixed(4)}, ${currentCoords.lng.toFixed(4)}</span>
+        </div>
+      `).openPopup();
 
       // Render Emergency Facilities
       renderFacilityMarkers();
+
+      // Map sizing invalidation
+      setTimeout(() => {
+        if (chennaiMap) chennaiMap.invalidateSize();
+      }, 300);
+
+      window.addEventListener('resize', () => {
+        if (chennaiMap) chennaiMap.invalidateSize();
+      });
 
       // Attempt live geolocation
       if (navigator.geolocation) {
@@ -1654,6 +1944,13 @@
             currentCoords.lat = pos.coords.latitude;
             currentCoords.lng = pos.coords.longitude;
             userMarker.setLatLng([currentCoords.lat, currentCoords.lng]);
+            userMarker.setPopupContent(`
+              <div style="font-family: inherit; font-size: 0.85rem; line-height: 1.4; color: #f8fafc;">
+                <strong style="color: #06b6d4; font-size: 0.92rem;">Your Live GPS Position</strong><br>
+                <span style="font-size: 0.75rem; color: #94a3b8;">Chennai Metropolitan Area</span><br>
+                <span style="font-size: 0.72rem; font-family: monospace; color: #38bdf8;">${currentCoords.lat.toFixed(4)}, ${currentCoords.lng.toFixed(4)}</span>
+              </div>
+            `);
             chennaiMap.setView([currentCoords.lat, currentCoords.lng], 14);
           },
           (err) => {
@@ -1670,6 +1967,10 @@
       facilityMarkers = [];
 
       CHENNAI_POIS.forEach(poi => {
+        if (poi.cat === 'POLICE' && !showPolice) return;
+        if (poi.cat === 'HOSPITAL' && !showHospitals) return;
+        if (poi.cat === 'PHARMACY' && !showPharmacies) return;
+
         let color = '#3b82f6';
         let iconClass = 'fa-building-shield';
 
@@ -1690,10 +1991,10 @@
 
         const marker = L.marker([poi.lat, poi.lng], { icon }).addTo(chennaiMap);
         marker.bindPopup(`
-          <div style="font-family: inherit; font-size: 0.85rem; line-height: 1.4;">
-            <strong style="color: ${color};">${poi.name}</strong><br>
-            <span style="font-size: 0.75rem; color: #64748b;">${poi.cat} &bull; 24x7 Operational</span><br>
-            <a href="tel:${poi.phone}" style="display: inline-block; margin-top: 0.35rem; color: #2563eb; font-weight: 600; text-decoration: none;">
+          <div style="font-family: inherit; font-size: 0.85rem; line-height: 1.4; color: #f8fafc;">
+            <strong style="color: ${color}; font-size: 0.92rem;">${escapeHtml(poi.name)}</strong><br>
+            <span style="font-size: 0.75rem; color: #94a3b8;">${poi.cat} &bull; 24x7 Operational</span><br>
+            <a href="tel:${poi.phone}" style="display: inline-flex; align-items: center; gap: 0.35rem; margin-top: 0.4rem; color: #60a5fa; font-weight: 600; text-decoration: none;">
               <i class="fa-solid fa-phone"></i> ${poi.phone}
             </a>
           </div>
@@ -1832,27 +2133,78 @@
     // ========================================================
     // SOS TRIGGER & SIREN WORKFLOW
     // ========================================================
-    let sosHoldTimer = null;
+    let sosHoldInterval = null;
+    let sosHoldStartTime = null;
+    let sosHoldTriggered = false;
+    const SOS_HOLD_DURATION_MS = 3000;
 
-    function startSosHold() {
+    function startSosHold(e) {
+      if (activeAlertId) return;
+      if (sosHoldInterval) cancelSosHold();
+
+      sosHoldStartTime = Date.now();
+      sosHoldTriggered = false;
+
+      const progressContainer = document.getElementById('sos-progress-container');
+      const progressBar = document.getElementById('sos-progress-bar');
+      const chargeCircleBar = document.getElementById('sos-charge-bar');
+      const btnLabel = document.getElementById('sos-btn-label');
       const sosBtn = document.getElementById('btn-sos-trigger');
-      sosBtn.style.transform = 'scale(0.92)';
 
-      sosHoldTimer = setTimeout(() => {
-        executeSosTrigger();
-      }, 3000);
+      if (progressContainer) progressContainer.style.display = 'block';
+      if (sosBtn) sosBtn.style.transform = 'scale(0.94)';
+
+      sosHoldInterval = setInterval(() => {
+        if (!sosHoldStartTime) return;
+        const elapsed = Date.now() - sosHoldStartTime;
+        const pct = Math.min(100, (elapsed / SOS_HOLD_DURATION_MS) * 100);
+
+        if (progressBar) progressBar.style.width = `${pct}%`;
+        
+        // 465 is the circumference of circle with r=74 (2 * PI * 74 = 464.95)
+        const offset = Math.max(0, 465 - (465 * (pct / 100)));
+        if (chargeCircleBar) chargeCircleBar.style.strokeDashoffset = offset;
+
+        const remainingSec = Math.max(1, Math.ceil((SOS_HOLD_DURATION_MS - elapsed) / 1000));
+        if (btnLabel) btnLabel.textContent = `HOLDING... ${remainingSec}S`;
+
+        if (elapsed >= SOS_HOLD_DURATION_MS) {
+          sosHoldTriggered = true;
+          cancelSosHold();
+          if (btnLabel) btnLabel.textContent = 'DISPATCHING!';
+          executeSosTrigger('HOLD_BUTTON');
+        }
+      }, 35);
     }
 
-    function cancelSosHold() {
-      if (sosHoldTimer) {
-        clearTimeout(sosHoldTimer);
-        sosHoldTimer = null;
+    function cancelSosHold(e) {
+      const holdDuration = sosHoldStartTime ? (Date.now() - sosHoldStartTime) : 0;
+      
+      if (sosHoldInterval) {
+        clearInterval(sosHoldInterval);
+        sosHoldInterval = null;
       }
+      sosHoldStartTime = null;
+
+      const progressContainer = document.getElementById('sos-progress-container');
+      const progressBar = document.getElementById('sos-progress-bar');
+      const chargeCircleBar = document.getElementById('sos-charge-bar');
+      const btnLabel = document.getElementById('sos-btn-label');
       const sosBtn = document.getElementById('btn-sos-trigger');
-      sosBtn.style.transform = 'scale(1)';
+
+      if (progressContainer) progressContainer.style.display = 'none';
+      if (progressBar) progressBar.style.width = '0%';
+      if (chargeCircleBar) chargeCircleBar.style.strokeDashoffset = '465';
+      if (btnLabel) btnLabel.textContent = 'HOLD 3 SEC';
+      if (sosBtn) sosBtn.style.transform = 'scale(1)';
+
+      // Quick activation for tap/click (< 350ms)
+      if (!sosHoldTriggered && holdDuration > 0 && holdDuration < 350) {
+        executeSosTrigger('QUICK_TAP');
+      }
     }
 
-    async function executeSosTrigger() {
+    async function executeSosTrigger(method = 'BUTTON') {
       if (activeAlertId) {
         showToast('An active emergency alert is already broadcasting.', 'danger');
         return;
@@ -1874,7 +2226,7 @@
             latitude: currentCoords.lat,
             longitude: currentCoords.lng,
             accuracyMeters: 10,
-            triggerMethod: 'HOLD_BUTTON'
+            triggerMethod: method
           })
         });
 
@@ -1883,9 +2235,18 @@
           activeAlertId = result.data.alert.id;
           const banner = document.getElementById('sos-active-banner');
           const details = document.getElementById('sos-banner-details');
+          const gmapsLink = document.getElementById('sos-gmaps-link');
           
           banner.style.display = 'block';
-          details.textContent = `Alert ID: ${activeAlertId.slice(0, 8)}... broadcasted at ${currentCoords.lat.toFixed(4)}, ${currentCoords.lng.toFixed(4)}. Emergency SMS dispatched to your contacts!`;
+          details.innerHTML = `
+            Alert ID: <strong style="font-family: monospace; color: #fca5a5;">${activeAlertId.slice(0, 8)}</strong> broadcasted at 
+            <span style="font-family: monospace; color: #38bdf8;">${currentCoords.lat.toFixed(4)}, ${currentCoords.lng.toFixed(4)}</span>.<br>
+            Emergency SMS alerts dispatched to your configured trusted contacts.
+          `;
+
+          if (gmapsLink) {
+            gmapsLink.href = `https://www.google.com/maps?q=${currentCoords.lat},${currentCoords.lng}`;
+          }
           
           showToast('EMERGENCY SOS DISPATCHED TO CONTACTS!', 'danger');
         } else {
@@ -2202,6 +2563,21 @@
             chennaiMap.fitBounds(routePolyline.getBounds(), { padding: [50, 50] });
           }
 
+          // Dynamically update Google Maps direct navigation buttons
+          const gmapsNavUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin.lat + ',' + origin.lng)}&destination=${encodeURIComponent(dest.lat + ',' + dest.lng)}&travelmode=driving`;
+          
+          const btnSafeGmaps = document.getElementById('btn-gmaps-safe');
+          if (btnSafeGmaps) {
+            btnSafeGmaps.href = gmapsNavUrl;
+            btnSafeGmaps.setAttribute('aria-label', `Navigate safe corridor from ${origin.name} to ${dest.name} on Google Maps`);
+          }
+
+          const btnFastGmaps = document.getElementById('btn-gmaps-fast');
+          if (btnFastGmaps) {
+            btnFastGmaps.href = gmapsNavUrl;
+            btnFastGmaps.setAttribute('aria-label', `Navigate fastest corridor from ${origin.name} to ${dest.name} on Google Maps`);
+          }
+
           showToast(`Safe route calculated between ${origin.name} & ${dest.name}!`, 'success');
         } else {
           showToast(data.message || 'Error analyzing route safety.', 'danger');
@@ -2304,10 +2680,44 @@
     // ========================================================
     // AUTHENTICATION WORKFLOW (PHONE NUMBER + OTP)
     // ========================================================
+    let otpCountdownInterval = null;
+
+    function startOtpCountdown() {
+      let secondsRemaining = 30;
+      const countEl = document.getElementById('otp-countdown');
+      const resendBtn = document.getElementById('btn-resend-otp');
+      if (resendBtn) {
+        resendBtn.disabled = true;
+        resendBtn.style.opacity = '0.4';
+      }
+      if (countEl) countEl.textContent = secondsRemaining;
+
+      if (otpCountdownInterval) clearInterval(otpCountdownInterval);
+
+      otpCountdownInterval = setInterval(() => {
+        secondsRemaining--;
+        if (secondsRemaining <= 0) {
+          clearInterval(otpCountdownInterval);
+          otpCountdownInterval = null;
+          if (countEl) countEl.textContent = '0';
+          if (resendBtn) {
+            resendBtn.disabled = false;
+            resendBtn.style.opacity = '1';
+          }
+        } else {
+          if (countEl) countEl.textContent = secondsRemaining;
+        }
+      }, 1000);
+    }
+
     async function requestPhoneOtp() {
-      const phone = document.getElementById('input-phone').value.trim();
-      if (!phone || phone.length < 10) {
+      const phoneInput = document.getElementById('input-phone');
+      let rawPhone = phoneInput.value.trim().replace(/[^0-9]/g, '');
+      if (rawPhone.length > 10) rawPhone = rawPhone.slice(-10);
+
+      if (!rawPhone || rawPhone.length < 10) {
         showToast('Please enter a valid 10-digit mobile number.', 'danger');
+        phoneInput.focus();
         return;
       }
 
@@ -2315,16 +2725,18 @@
         const res = await fetch(`${API_BASE}/users/auth/otp-request`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phoneNumber: phone })
+          body: JSON.stringify({ phoneNumber: rawPhone })
         });
 
         const data = await res.json();
         if (res.ok) {
           document.getElementById('auth-step-phone').style.display = 'none';
           document.getElementById('auth-step-otp').style.display = 'block';
-          document.getElementById('input-otp').value = data.data.demoOtp || '123456';
+          const otpVal = (data.data && data.data.demoOtp) ? data.data.demoOtp : '123456';
+          document.getElementById('input-otp').value = otpVal;
           document.getElementById('input-otp').focus();
-          showToast('OTP code sent successfully!', 'success');
+          startOtpCountdown();
+          showToast(`Verification code sent! (Dev code: ${otpVal})`, 'success');
         } else {
           showToast(data.message || 'Could not request OTP.', 'danger');
         }
@@ -2334,7 +2746,10 @@
     }
 
     async function verifyPhoneOtp() {
-      const phone = document.getElementById('input-phone').value.trim();
+      const phoneInput = document.getElementById('input-phone');
+      let phone = phoneInput.value.trim().replace(/[^0-9]/g, '');
+      if (phone.length > 10) phone = phone.slice(-10);
+
       const otp = document.getElementById('input-otp').value.trim();
       const displayName = document.getElementById('input-display-name').value.trim();
 
@@ -2411,6 +2826,43 @@
       });
       document.getElementById('btn-logout').addEventListener('click', logoutUser);
 
+      // OTP Autofill & Resend Button Handlers
+      const btnAutofill = document.getElementById('btn-autofill-otp');
+      if (btnAutofill) {
+        btnAutofill.addEventListener('click', () => {
+          document.getElementById('input-otp').value = '123456';
+          showToast('Development OTP 123456 auto-filled!', 'success');
+          document.getElementById('input-display-name').focus();
+        });
+      }
+
+      const btnResend = document.getElementById('btn-resend-otp');
+      if (btnResend) {
+        btnResend.addEventListener('click', () => {
+          requestPhoneOtp();
+        });
+      }
+
+      // Enter Key Handlers on Inputs
+      document.getElementById('input-phone').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          requestPhoneOtp();
+        }
+      });
+      document.getElementById('input-otp').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          verifyPhoneOtp();
+        }
+      });
+      document.getElementById('input-display-name').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          verifyPhoneOtp();
+        }
+      });
+
       // Contact Modal Events
       document.getElementById('btn-open-add-contact').addEventListener('click', () => openModal('modal-add-contact'));
       document.getElementById('btn-close-contact-modal').addEventListener('click', () => closeModal('modal-add-contact'));
@@ -2428,14 +2880,20 @@
         }
       });
 
-      // SOS Events
+      // SOS Events (Both Press-and-Hold 3s & Quick Tap)
       const sosBtn = document.getElementById('btn-sos-trigger');
       sosBtn.addEventListener('mousedown', startSosHold);
       sosBtn.addEventListener('mouseup', cancelSosHold);
       sosBtn.addEventListener('mouseleave', cancelSosHold);
-      sosBtn.addEventListener('touchstart', startSosHold);
+      sosBtn.addEventListener('touchstart', startSosHold, { passive: true });
       sosBtn.addEventListener('touchend', cancelSosHold);
-      sosBtn.addEventListener('click', executeSosTrigger);
+      sosBtn.addEventListener('click', (e) => {
+        // Handled cleanly by cancelSosHold if hold occurred; if keyboard trigger or quick tap:
+        if (!sosHoldTriggered) {
+          executeSosTrigger('BUTTON_CLICK');
+        }
+        sosHoldTriggered = false;
+      });
       document.getElementById('btn-resolve-sos').addEventListener('click', resolveActiveSos);
 
       // Route Comparison Events
@@ -2465,7 +2923,7 @@
       document.getElementById('btn-decline-fake-call').addEventListener('click', declineFakeCall);
       document.getElementById('btn-accept-fake-call').addEventListener('click', acceptFakeCall);
 
-      // Map Controls
+      // Map Controls & Filters
       document.getElementById('btn-locate-me').addEventListener('click', () => {
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(pos => {
@@ -2476,6 +2934,27 @@
             showToast('Centered on your GPS location in Chennai.', 'success');
           });
         }
+      });
+
+      document.getElementById('btn-toggle-police').addEventListener('click', (e) => {
+        showPolice = !showPolice;
+        e.currentTarget.classList.toggle('active', showPolice);
+        renderFacilityMarkers();
+        showToast(showPolice ? 'Showing police stations.' : 'Hidden police stations.', 'info');
+      });
+
+      document.getElementById('btn-toggle-hospitals').addEventListener('click', (e) => {
+        showHospitals = !showHospitals;
+        e.currentTarget.classList.toggle('active', showHospitals);
+        renderFacilityMarkers();
+        showToast(showHospitals ? 'Showing hospitals.' : 'Hidden hospitals.', 'info');
+      });
+
+      document.getElementById('btn-toggle-pharmacies').addEventListener('click', (e) => {
+        showPharmacies = !showPharmacies;
+        e.currentTarget.classList.toggle('active', showPharmacies);
+        renderFacilityMarkers();
+        showToast(showPharmacies ? 'Showing 24x7 pharmacies.' : 'Hidden 24x7 pharmacies.', 'info');
       });
     }
 
