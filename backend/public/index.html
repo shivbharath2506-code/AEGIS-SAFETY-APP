@@ -1623,9 +1623,11 @@
         attributionControl: false
       }).setView([currentCoords.lat, currentCoords.lng], 13);
 
-      // OpenStreetMap Tiles (High-contrast, clean)
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19
+      // High-performance, unrestricted CartoDB Dark Matter tiles for cybersecurity command center
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+        subdomains: 'abcd',
+        maxZoom: 20
       }).addTo(chennaiMap);
 
       // Add user location pulsing marker

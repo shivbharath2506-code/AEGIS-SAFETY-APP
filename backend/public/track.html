@@ -136,7 +136,11 @@
     const defaultLng = 80.2707;
 
     map = L.map('track-map', { attributionControl: false }).setView([defaultLat, defaultLng], 14);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+      subdomains: 'abcd',
+      maxZoom: 20
+    }).addTo(map);
 
     const pulseIcon = L.divIcon({
       html: '<div style="width:24px; height:24px; background:#06b6d4; border:3px solid #fff; border-radius:50%; box-shadow:0 0 20px #06b6d4;"></div>',

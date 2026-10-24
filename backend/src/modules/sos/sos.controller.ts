@@ -11,18 +11,23 @@ import { SOSAlert, SOSDelivery, EmergencyContact } from '../../types';
 export const triggerSosSchema = z.object({
   latitude: z.number().nullable().optional(),
   longitude: z.number().nullable().optional(),
+  accuracyMeters: z.number().nullable().optional(),
   locationAccuracyMeters: z.number().nullable().optional(),
+  triggerMethod: z.string().optional(),
   locationCapturedAt: z.string().optional()
 });
 
 export const resolveSosSchema = z.object({
-  resolutionNote: z.string().max(300).optional()
+  alertId: z.string().optional(),
+  resolutionNote: z.string().max(300).optional(),
+  resolutionNotes: z.string().max(300).optional()
 });
 
 export class SosController {
   async triggerSos(req: Request, res: Response): Promise<any> {
     const userId = req.user!.id;
-    const { latitude, longitude, locationAccuracyMeters, locationCapturedAt } = req.body;
+    const { latitude, longitude, locationAccuracyMeters, locationCapturedAt, accuracyMeters } = req.body;
+    const accuracy = locationAccuracyMeters ?? accuracyMeters ?? null;
 
     const hasLocation = typeof latitude === 'number' && typeof longitude === 'number';
 
@@ -229,7 +234,12 @@ export class SosController {
 
   async resolveAlert(req: Request, res: Response): Promise<any> {
     const userId = req.user!.id;
-    const id = req.params.id as string;
+    const id = (req.params.id || req.body.alertId) as string;
+
+    if (!id) {
+      return errorResponse(res, 'BAD_REQUEST', 'Emergency alert ID is required.', 400);
+    }
+
     const alert = inMemoryStore.alerts.get(id);
 
     if (!alert) {
@@ -240,10 +250,10 @@ export class SosController {
       return errorResponse(res, 'FORBIDDEN', 'Access denied to this alert.', 403);
     }
 
-    const { resolutionNote } = req.body;
+    const { resolutionNote, resolutionNotes } = req.body;
     alert.status = 'RESOLVED';
     alert.resolved_at = new Date();
-    alert.resolution_note = resolutionNote || 'User indicated safety has been restored.';
+    alert.resolution_note = resolutionNote || resolutionNotes || 'User indicated safety has been restored.';
 
     logger.info(`[SOS RESOLVED] Alert ${id} marked as resolved.`);
 
