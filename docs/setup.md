@@ -76,8 +76,11 @@
 
 ---
 
-### 4. Development Mock Authentication Mode
-In development mode (`DEV_MOCK_AUTH=true`):
-- Mobile login can be performed with phone number `9876543210` and OTP `123456`.
-- The backend authenticates requests using the `x-dev-user-id` header or standard mock bearer tokens.
-- **Production Guardrail**: In `NODE_ENV=production`, mock auth is disabled and rejected with `401 UNAUTHORIZED`.
+### 4. Real-Time Phone Authentication & OTP Verification
+- Enter any valid 10-digit mobile number in the mobile app or web portal.
+- The server dispatches a dynamic, real-time 6-digit OTP via the configured SMS provider (Fast2SMS or Twilio; in development/mock SMS mode, the code is logged in the backend terminal).
+- Enter the received 6-digit OTP code to verify and access your account.
+- **Security Guardrails**:
+  - OTPs expire automatically after 5 minutes (300 seconds).
+  - Single-use policy: OTP is consumed immediately upon successful verification.
+  - Rate limiting: 30-second cooldown between resend requests and maximum 5 failed verification attempts before invalidation.

@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="origin-when-cross-origin">
   <title>AEGIS — Live Location Monitor</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -130,17 +131,21 @@
   <script>
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
+    const sessionId = urlParams.get('session');
     let map, marker;
 
     const defaultLat = 13.0827;
     const defaultLng = 80.2707;
 
-    map = L.map('track-map', { attributionControl: false }).setView([defaultLat, defaultLng], 14);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-      subdomains: 'abcd',
-      maxZoom: 20
+    map = L.map('track-map', { attributionControl: true }).setView([defaultLat, defaultLng], 14);
+    const trackTileLayer = L.tileLayer('/api/v1/tiles/osm/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors',
+      maxZoom: 19
     }).addTo(map);
+
+    trackTileLayer.on('tileerror', () => {
+      console.warn('Track map tile failed to load.');
+    });
 
     setTimeout(() => { if (map) map.invalidateSize(); }, 300);
     window.addEventListener('resize', () => { if (map) map.invalidateSize(); });
@@ -160,14 +165,19 @@
       }
 
       try {
-        const res = await fetch(`/api/v1/location-sessions/view?token=${encodeURIComponent(token)}`);
+        const fetchUrl = sessionId
+          ? `/api/v1/location-sessions/${encodeURIComponent(sessionId)}?token=${encodeURIComponent(token)}`
+          : `/api/v1/location-sessions/view?token=${encodeURIComponent(token)}`;
+        const res = await fetch(fetchUrl);
         const data = await res.json();
         if (res.ok && data.data) {
-          const lat = data.data.currentLatitude || defaultLat;
-          const lng = data.data.currentLongitude || defaultLng;
+          const lat = data.data.currentLatitude ?? data.data.latestLocation?.latitude ?? defaultLat;
+          const lng = data.data.currentLongitude ?? data.data.latestLocation?.longitude ?? defaultLng;
           marker.setLatLng([lat, lng]);
           map.panTo([lat, lng]);
           document.getElementById('coords-text').textContent = `Live GPS: ${lat.toFixed(4)}, ${lng.toFixed(4)} &bull; Chennai Grid`;
+        } else if (data.message) {
+          document.getElementById('coords-text').textContent = data.message;
         }
       } catch (e) {
         console.warn('Poll error:', e);

@@ -96,6 +96,46 @@ export class InMemoryStore {
         verified_at: new Date()
       },
 
+      {
+        id: 'fac-police-ashoknagar',
+        provider: 'OSM',
+        external_place_id: 'osm-ps-ashok-06',
+        category: 'POLICE',
+        name: 'R3 Ashok Nagar Police Station',
+        latitude: 13.0372,
+        longitude: 80.2125,
+        phone_number: '044-23452622',
+        address: '1st Avenue, Ashok Nagar (100ft Road Jn), Chennai, Tamil Nadu 600083',
+        is_emergency_service: true,
+        verified_at: new Date()
+      },
+      {
+        id: 'fac-police-annanagar',
+        provider: 'OSM',
+        external_place_id: 'osm-ps-annanagar-07',
+        category: 'POLICE',
+        name: 'K4 Anna Nagar Police Station',
+        latitude: 13.0850,
+        longitude: 80.2100,
+        phone_number: '044-23452630',
+        address: '2nd Avenue, Anna Nagar, Chennai, Tamil Nadu 600040',
+        is_emergency_service: true,
+        verified_at: new Date()
+      },
+      {
+        id: 'fac-police-thirumangalam',
+        provider: 'OSM',
+        external_place_id: 'osm-ps-thirumangalam-08',
+        category: 'POLICE',
+        name: 'V5 Thirumangalam Police Station',
+        latitude: 13.0858,
+        longitude: 80.1982,
+        phone_number: '044-23452635',
+        address: '100ft Inner Ring Road, Thirumangalam, Chennai, Tamil Nadu 600040',
+        is_emergency_service: true,
+        verified_at: new Date()
+      },
+
       // Hospitals
       {
         id: 'fac-hosp-miot',
@@ -137,6 +177,32 @@ export class InMemoryStore {
         verified_at: new Date()
       },
       {
+        id: 'fac-hosp-vijaya',
+        provider: 'OSM',
+        external_place_id: 'osm-hosp-vijaya-05',
+        category: 'HOSPITAL',
+        name: 'Vijaya Hospital & Health Centre',
+        latitude: 13.0512,
+        longitude: 80.2118,
+        phone_number: '044-66646664',
+        address: 'N S K Salai, Vadapalani (100ft Road Jn), Chennai, Tamil Nadu 600026',
+        is_emergency_service: true,
+        verified_at: new Date()
+      },
+      {
+        id: 'fac-hosp-smf',
+        provider: 'OSM',
+        external_place_id: 'osm-hosp-smf-06',
+        category: 'HOSPITAL',
+        name: 'Sundaram Medical Foundation',
+        latitude: 13.0844,
+        longitude: 80.2144,
+        phone_number: '044-26268844',
+        address: '9C Dr. Thirumoorthy Salai, Shanthi Colony, Anna Nagar, Chennai 600040',
+        is_emergency_service: true,
+        verified_at: new Date()
+      },
+      {
         id: 'fac-hosp-gh',
         provider: 'OSM',
         external_place_id: 'osm-hosp-gh-04',
@@ -169,7 +235,7 @@ export class InMemoryStore {
         provider: 'OSM',
         external_place_id: 'osm-pharm-medplus-02',
         category: 'PHARMACY',
-        name: 'MedPlus Pharmacy - Ramapuram Main Rd',
+        name: 'MedPlus Pharmacy 24x7 - Ramapuram Main Rd',
         latitude: 13.0322,
         longitude: 80.1802,
         phone_number: '044-22495566',
@@ -187,6 +253,45 @@ export class InMemoryStore {
         longitude: 80.2098,
         phone_number: '044-24801122',
         address: '100 Feet Road, Vadapalani, Chennai 600026',
+        is_emergency_service: false,
+        verified_at: new Date()
+      },
+      {
+        id: 'fac-pharm-apollo-ashok',
+        provider: 'OSM',
+        external_place_id: 'osm-pharm-apollo-04',
+        category: 'PHARMACY',
+        name: 'Apollo Pharmacy 24x7 - Ashok Pillar',
+        latitude: 13.0368,
+        longitude: 80.2115,
+        phone_number: '044-24741122',
+        address: '100ft Road Junction, Ashok Nagar, Chennai 600083',
+        is_emergency_service: false,
+        verified_at: new Date()
+      },
+      {
+        id: 'fac-pharm-apollo-annanagar',
+        provider: 'OSM',
+        external_place_id: 'osm-pharm-apollo-05',
+        category: 'PHARMACY',
+        name: 'Apollo Pharmacy 24x7 - Anna Nagar Roundtana',
+        latitude: 13.0852,
+        longitude: 80.2120,
+        phone_number: '044-26211122',
+        address: '2nd Avenue, Anna Nagar, Chennai 600040',
+        is_emergency_service: false,
+        verified_at: new Date()
+      },
+      {
+        id: 'fac-pharm-medplus-koyambedu',
+        provider: 'OSM',
+        external_place_id: 'osm-pharm-medplus-06',
+        category: 'PHARMACY',
+        name: 'MedPlus Pharmacy 24x7 - 100ft Road Koyambedu',
+        latitude: 13.0675,
+        longitude: 80.1970,
+        phone_number: '044-24792244',
+        address: '100ft Road, Koyambedu, Chennai 600107',
         is_emergency_service: false,
         verified_at: new Date()
       }

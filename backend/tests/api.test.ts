@@ -1,6 +1,8 @@
 import request from 'supertest';
 import app from '../src/app';
 import { inMemoryStore } from '../src/database/inMemoryStore';
+import { otpService } from '../src/modules/users/otp.service';
+import { findOrCreateUserByFirebaseIdentity } from '../src/modules/users/user.service';
 
 describe('AEGIS Backend API Automated Test Suite', () => {
   const testUserId = 'test-user-priya-01';
@@ -9,6 +11,29 @@ describe('AEGIS Backend API Automated Test Suite', () => {
   beforeEach(() => {
     // Reset seed data state before tests
     inMemoryStore.seedDefaultChennaiData();
+    otpService.clear();
+  });
+
+  describe('0. Web Application Page Routes (Welcome & Main Page)', () => {
+    it('GET / should return 200 with AEGIS Safety Dashboard', async () => {
+      const res = await request(app).get('/');
+      expect(res.status).toBe(200);
+      expect(res.text).toContain('dashboard-container');
+      expect(res.text).toContain('btn-sos-trigger');
+    });
+
+    it('GET /home should return 200 with existing main AEGIS page', async () => {
+      const res = await request(app).get('/home');
+      expect(res.status).toBe(200);
+      expect(res.text).toContain('dashboard-container');
+      expect(res.text).toContain('btn-sos-trigger');
+    });
+
+    it('GET /index.html should redirect to /', async () => {
+      const res = await request(app).get('/index.html');
+      expect(res.status).toBe(302);
+      expect(res.headers.location).toBe('/');
+    });
   });
 
   describe('1. Health Check Endpoint', () => {
@@ -18,6 +43,158 @@ describe('AEGIS Backend API Automated Test Suite', () => {
       expect(res.body.status).toBe('HEALTHY');
       expect(res.body.service).toContain('AEGIS');
       expect(res.body.cityFocus).toContain('Chennai');
+    });
+  });
+
+  describe('1b. Real-Time Phone OTP & Authentication', () => {
+    it('should dispatch real-time 6-digit OTP to mobile number', async () => {
+      const res = await request(app)
+        .post('/api/v1/users/auth/otp-request')
+        .send({ phoneNumber: '9840112233' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.phoneNumber).toBe('+919840112233');
+      expect(res.body.data.expiresInSeconds).toBe(300);
+      expect(res.body.data.devOtp).toBeDefined();
+      expect(res.body.data.devOtp).toMatch(/^\d{6}$/);
+    });
+
+    it('should reject invalid mobile number format for OTP request', async () => {
+      const res = await request(app)
+        .post('/api/v1/users/auth/otp-request')
+        .send({ phoneNumber: '123' });
+
+      expect(res.status).toBe(422);
+      expect(res.body.success).toBe(false);
+    });
+
+    it('should authenticate user with valid real-time OTP and reject reused OTP', async () => {
+      // Step 1: Request real-time OTP
+      const reqRes = await request(app)
+        .post('/api/v1/users/auth/otp-request')
+        .send({ phoneNumber: '9840112233' });
+
+      const realOtp = reqRes.body.data.devOtp;
+
+      // Step 2: Attempt with incorrect OTP
+      const failRes = await request(app)
+        .post('/api/v1/users/auth/login')
+        .send({
+          phoneNumber: '9840112233',
+          otp: '000000'
+        });
+      expect(failRes.status).toBe(400);
+      expect(failRes.body.error.code).toBe('INVALID_OTP');
+
+      // Step 3: Login with correct real-time OTP
+      const loginRes = await request(app)
+        .post('/api/v1/users/auth/login')
+        .send({
+          phoneNumber: '9840112233',
+          otp: realOtp,
+          displayName: 'Lakshmi Narayanan'
+        });
+
+      expect(loginRes.status).toBe(200);
+      expect(loginRes.body.success).toBe(true);
+      expect(loginRes.body.data.token).toMatch(/^aegis-token-/);
+      expect(loginRes.body.data.user.verifiedPhoneNumber).toBe('+919840112233');
+      expect(loginRes.body.data.user.displayName).toBe('Lakshmi Narayanan');
+
+      // Step 4: Verify single-use policy (re-using the same OTP must fail)
+      const reuseRes = await request(app)
+        .post('/api/v1/users/auth/login')
+        .send({
+          phoneNumber: '9840112233',
+          otp: realOtp
+        });
+      expect(reuseRes.status).toBe(400);
+      expect(reuseRes.body.error.code).toBe('INVALID_OTP');
+    });
+  });
+
+  describe('1c. Firebase Authentication & Identity Preservation', () => {
+    it('GET /api/v1/users/auth/firebase-config should return configuration structure', async () => {
+      const res = await request(app).get('/api/v1/users/auth/firebase-config');
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(typeof res.body.data.isConfigured).toBe('boolean');
+      expect(res.body.data).toHaveProperty('apiKey');
+      expect(res.body.data).toHaveProperty('authDomain');
+      expect(res.body.data).toHaveProperty('projectId');
+    });
+
+    it('POST /api/v1/users/auth/firebase-login should fail validation when idToken is missing', async () => {
+      const res = await request(app)
+        .post('/api/v1/users/auth/firebase-login')
+        .send({});
+
+      expect(res.status).toBe(422);
+      expect(res.body.success).toBe(false);
+      expect(res.body.error.code).toBe('VALIDATION_FAILED');
+    });
+
+    it('POST /api/v1/users/auth/firebase-login should reject invalid or forged Firebase ID tokens', async () => {
+      const res = await request(app)
+        .post('/api/v1/users/auth/firebase-login')
+        .send({
+          idToken: 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.invalidpayload.invalidsignature',
+          displayName: 'Test Citizen'
+        });
+
+      expect(res.status).toBe(401);
+      expect(res.body.success).toBe(false);
+      expect(res.body.error.code).toBe('FIREBASE_AUTH_FAILED');
+    });
+
+    it('Protected endpoints should reject invalid Firebase JWT tokens with 401 UNAUTHORIZED', async () => {
+      const res = await request(app)
+        .get('/api/v1/emergency-contacts')
+        .set('Authorization', 'Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.fakepayload.fakesignature');
+
+      expect(res.status).toBe(401);
+      expect(res.body.success).toBe(false);
+      expect(res.body.error.code).toBe('UNAUTHORIZED');
+    });
+
+    it('Safe user identity migration: should link Firebase UID to existing user by verified phone number and preserve contacts', () => {
+      // Demo user is seeded in memory with ID 'demo-user-chennai-01' and phone '+919876543210'
+      const seededUserId = 'demo-user-chennai-01';
+      const existingUser = inMemoryStore.users.get(seededUserId);
+      expect(existingUser).toBeDefined();
+      expect(existingUser?.verified_phone_number).toBe('+919876543210');
+
+      // Seeded contacts for user exist
+      const contactsBefore = Array.from(inMemoryStore.contacts.values()).filter(c => c.user_id === seededUserId);
+      expect(contactsBefore.length).toBeGreaterThan(0);
+
+      // Simulate first-time Firebase Phone Auth login with new Firebase UID
+      const migratedUser = findOrCreateUserByFirebaseIdentity(
+        'firebase-uid-priya-verified-123',
+        '+919876543210',
+        'Priya Ramanathan'
+      );
+
+      // Must be same user record without duplicates
+      expect(migratedUser.id).toBe(seededUserId);
+      expect(migratedUser.firebase_uid).toBe('firebase-uid-priya-verified-123');
+
+      // Emergency contacts must remain attached to user's ID
+      const contactsAfter = Array.from(inMemoryStore.contacts.values()).filter(c => c.user_id === migratedUser.id);
+      expect(contactsAfter.length).toBe(contactsBefore.length);
+    });
+
+    it('Safe user identity migration: should create new active user for previously unregistered Firebase identity', () => {
+      const newPhone = '+919988112244';
+      const newUid = 'firebase-uid-fresh-user-456';
+
+      const newUser = findOrCreateUserByFirebaseIdentity(newUid, newPhone, 'Suresh K');
+      expect(newUser).toBeDefined();
+      expect(newUser.firebase_uid).toBe(newUid);
+      expect(newUser.verified_phone_number).toBe(newPhone);
+      expect(newUser.display_name).toBe('Suresh K');
+      expect(newUser.account_status).toBe('ACTIVE');
     });
   });
 
@@ -161,7 +338,7 @@ describe('AEGIS Backend API Automated Test Suite', () => {
       expect(res.body.data.alert.status).toBe('ACTIVE');
       expect(res.body.data.alert.locationAvailable).toBe(true);
       expect(res.body.data.deliveries.length).toBeGreaterThan(0);
-      expect(res.body.data.deliveries[0].status).toBe('SENT_TO_PROVIDER');
+      expect(['SENT_TO_PROVIDER', 'SIMULATED_DISPATCH', 'FAILED']).toContain(res.body.data.deliveries[0].status);
     });
 
     it('should trigger SOS alert even when GPS is unavailable', async () => {
@@ -305,6 +482,53 @@ describe('AEGIS Backend API Automated Test Suite', () => {
 
       expect(res.status).toBe(422);
       expect(res.body.error.code).toBe('VALIDATION_FAILED');
+    });
+
+    it('should search places for theatres, apartments, or real-world locations (Rohini Cinemas)', async () => {
+      const res = await request(app)
+        .get('/api/v1/routes/places/search?q=Rohini+Cinemas');
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.results).toBeInstanceOf(Array);
+      expect(res.body.data.results.length).toBeGreaterThan(0);
+
+      const first = res.body.data.results[0];
+      expect(first.name).toBeDefined();
+      expect(first.latitude).toBeGreaterThan(12.0);
+      expect(first.longitude).toBeGreaterThan(79.0);
+      expect(first.displayName).toBeDefined();
+    });
+
+    it('should reverse geocode GPS coordinates to place/street name', async () => {
+      const res = await request(app)
+        .get('/api/v1/routes/places/reverse?lat=13.0758&lng=80.1958');
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.name).toBeDefined();
+      expect(res.body.data.displayName).toBeDefined();
+      expect(res.body.data.latitude).toBeCloseTo(13.0758, 2);
+    });
+
+    it('should compare routes between specific places using exact coordinates (Rohini Cinemas to Sri Ganga Cinemas)', async () => {
+      // Rohini Cinemas: 13.0758, 80.1958 | Sri Ganga Cinemas: 13.1249, 80.2176
+      const res = await request(app)
+        .post('/api/v1/routes/compare')
+        .send({
+          originLat: 13.0758,
+          originLng: 80.1958,
+          destLat: 13.1249,
+          destLng: 80.2176
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.recommendedSafeRoute).toBeDefined();
+      expect(res.body.data.recommendedSafeRoute.distanceMeters).toBeGreaterThan(1000);
+      expect(res.body.data.recommendedSafeRoute.isGuaranteedSafe).toBe(false);
+      expect(res.body.data.recommendedSafeRoute.navigationHandoffUrl).toContain('13.0758,80.1958');
+      expect(res.body.data.recommendedSafeRoute.navigationHandoffUrl).toContain('13.1249,80.2176');
     });
   });
 

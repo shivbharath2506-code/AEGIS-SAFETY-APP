@@ -16,7 +16,7 @@ class OtpVerificationScreen extends StatefulWidget {
 }
 
 class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
-  final _otpController = TextEditingController(text: '123456');
+  final _otpController = TextEditingController();
   bool _isLoading = false;
   int _resendCooldown = 30;
   Timer? _timer;
@@ -108,7 +108,37 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 'Sent to ${widget.phoneNumber}. Enter the code below to verify your phone number.',
                 style: const TextStyle(fontSize: 13, color: AppColors.textSecondaryLight),
               ),
-              const SizedBox(height: 28),
+              Consumer<AuthProvider>(
+                builder: (context, auth, _) {
+                  if (auth.dispatchedDevOtp == null) return const SizedBox.shrink();
+                  return Container(
+                    margin: const EdgeInsets.only(top: 14),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: AppColors.infoBlue.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.infoBlue.withOpacity(0.25)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.info_outline, size: 16, color: AppColors.infoBlue),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'SMS Gateway in Dev Mode: Your code is ${auth.dispatchedDevOtp}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.infoBlue,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 24),
 
               TextFormField(
                 controller: _otpController,

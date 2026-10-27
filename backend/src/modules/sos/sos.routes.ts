@@ -39,4 +39,8 @@ router.post(
 
 router.get('/:id/deliveries', (req, res) => sosController.getAlertDeliveries(req, res));
 
+// Outbound Emergency Call
+router.post('/call', (req, res) => sosController.triggerCallToContact(req, res));
+router.post('/:id/call', (req, res) => sosController.triggerCallToContact(req, res));
+
 export default router;

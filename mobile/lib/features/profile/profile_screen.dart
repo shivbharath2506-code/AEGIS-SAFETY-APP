@@ -100,7 +100,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         const Icon(Icons.verified, color: AppColors.safeGreen, size: 16),
                         const SizedBox(width: 4),
                         Text(
-                          user?.verifiedPhoneNumber ?? '+91 9876543210',
+                          user?.verifiedPhoneNumber ?? 'Unverified',
                           style: const TextStyle(
                             fontSize: 13,
                             color: AppColors.textSecondaryLight,

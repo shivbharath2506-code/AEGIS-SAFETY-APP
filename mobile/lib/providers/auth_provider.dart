@@ -38,11 +38,17 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  String? _dispatchedDevOtp;
+  String? get dispatchedDevOtp => _dispatchedDevOtp;
+
   Future<bool> sendOtp(String phoneNumber) async {
     _errorMessage = null;
+    _dispatchedDevOtp = null;
     notifyListeners();
     try {
-      return await _authService.requestPhoneOtp(phoneNumber);
+      _dispatchedDevOtp = await _authService.requestPhoneOtp(phoneNumber);
+      notifyListeners();
+      return true;
     } catch (e) {
       _errorMessage = e.toString();
       notifyListeners();

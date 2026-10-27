@@ -3,6 +3,9 @@ import { z } from 'zod';
 import { inMemoryStore } from '../../database/inMemoryStore';
 import { successResponse, errorResponse } from '../../utils/response';
 import { User } from '../../types';
+import { otpService } from './otp.service';
+import { getPublicFirebaseConfig, verifyFirebaseIdToken } from '../../integrations/firebase';
+import { findOrCreateUserByFirebaseIdentity } from './user.service';
 
 export const requestOtpSchema = z.object({
   phoneNumber: z.string().min(10, 'Valid 10-digit phone number is required').max(20)
@@ -14,36 +17,88 @@ export const loginWithPhoneSchema = z.object({
   displayName: z.string().min(1).max(100).optional()
 });
 
+export const firebaseLoginSchema = z.object({
+  idToken: z.string().min(10, 'Valid Firebase ID token is required'),
+  displayName: z.string().min(1).max(100).optional()
+});
+
 export const updateProfileSchema = z.object({
   displayName: z.string().min(1).max(100).optional(),
   medicalNotes: z.string().max(500).optional().nullable()
 });
 
 export class UsersController {
+  async getFirebaseConfig(req: Request, res: Response): Promise<any> {
+    const configData = getPublicFirebaseConfig();
+    return successResponse(res, configData, 'Firebase client configuration.');
+  }
+
+  async firebaseLogin(req: Request, res: Response): Promise<any> {
+    const { idToken, displayName } = req.body;
+
+    try {
+      const decoded = await verifyFirebaseIdToken(idToken);
+      const user = findOrCreateUserByFirebaseIdentity(decoded.uid, decoded.phoneNumber, displayName || decoded.displayName);
+
+      return successResponse(
+        res,
+        {
+          token: idToken,
+          firebaseUid: user.firebase_uid,
+          user: {
+            id: user.id,
+            displayName: user.display_name,
+            verifiedPhoneNumber: user.verified_phone_number,
+            accountStatus: user.account_status
+          }
+        },
+        'Firebase authentication verified successfully.'
+      );
+    } catch (err: any) {
+      return errorResponse(res, 'FIREBASE_AUTH_FAILED', `Firebase ID token verification failed: ${err.message}`, 401);
+    }
+  }
   async requestOtp(req: Request, res: Response): Promise<any> {
     const { phoneNumber } = req.body;
-    const sanitized = phoneNumber.replace(/[^0-9+]/g, '');
-    const formatted = sanitized.startsWith('+') ? sanitized : `+91${sanitized.slice(-10)}`;
+    const result = await otpService.dispatchOtp(phoneNumber);
+
+    if (!result.success) {
+      return errorResponse(
+        res,
+        'OTP_REQUEST_FAILED',
+        result.error || 'Failed to dispatch verification code.',
+        result.statusCode || 400
+      );
+    }
 
     return successResponse(
       res,
       {
-        phoneNumber: formatted,
-        demoOtp: '123456',
-        expiresInSeconds: 300
+        phoneNumber: result.formattedPhone,
+        expiresInSeconds: result.expiresInSeconds,
+        ...(result.devOtp ? { devOtp: result.devOtp } : {}),
+        ...(result.error ? { providerNotice: result.error } : {})
       },
-      'One-time verification code dispatched via secure SMS.'
+      result.error
+        ? `Verification code generated: ${result.error}`
+        : 'One-time verification code dispatched via secure SMS.'
     );
   }
 
   async loginWithPhone(req: Request, res: Response): Promise<any> {
     const { phoneNumber, otp, displayName } = req.body;
-    const sanitized = phoneNumber.replace(/[^0-9+]/g, '');
-    const formatted = sanitized.startsWith('+') ? sanitized : `+91${sanitized.slice(-10)}`;
+    const verification = otpService.verifyOtp(phoneNumber, otp);
 
-    if (otp !== '123456' && otp.length < 4) {
-      return errorResponse(res, 'INVALID_OTP', 'The verification code provided is invalid or expired.', 400);
+    if (!verification.success) {
+      return errorResponse(
+        res,
+        'INVALID_OTP',
+        verification.error || 'The verification code provided is invalid or expired.',
+        verification.statusCode || 400
+      );
     }
+
+    const formatted = verification.formattedPhone!;
 
     let user: User | undefined;
     for (const u of inMemoryStore.users.values()) {

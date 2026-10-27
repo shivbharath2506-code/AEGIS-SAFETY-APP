@@ -12,6 +12,7 @@ export interface PushSendResult {
   providerReference?: string;
   errorCode?: string;
   errorMessage?: string;
+  isSimulated?: boolean;
 }
 
 export interface PushProvider {
@@ -20,11 +21,19 @@ export interface PushProvider {
 
 export class MockPushProvider implements PushProvider {
   async sendPush(targetTokens: string[], payload: PushNotificationPayload): Promise<PushSendResult> {
+    if (config.NODE_ENV === 'production') {
+      return {
+        success: false,
+        errorCode: 'MOCK_DISALLOWED_IN_PROD',
+        errorMessage: 'Mock Push is disallowed in production. Configure Firebase Admin SDK.'
+      };
+    }
     const reference = `mock-fcm-${Date.now()}-${targetTokens.length}`;
-    logger.info(`[MOCK PUSH DISPATCH] Sent to ${targetTokens.length} device(s) | Title: ${payload.title}`);
+    logger.info(`[DEV SIMULATED PUSH] Sent to ${targetTokens.length} device(s) | Title: ${payload.title}`);
     return {
       success: true,
-      providerReference: reference
+      providerReference: reference,
+      isSimulated: true
     };
   }
 }
@@ -32,8 +41,12 @@ export class MockPushProvider implements PushProvider {
 export class FirebaseFcmProvider implements PushProvider {
   async sendPush(targetTokens: string[], payload: PushNotificationPayload): Promise<PushSendResult> {
     if (!config.FIREBASE_PROJECT_ID || !config.FIREBASE_CLIENT_EMAIL) {
-      logger.warn('FCM Admin SDK credentials not fully configured, fallback to Mock Push.');
-      return new MockPushProvider().sendPush(targetTokens, payload);
+      logger.error('FCM requested but FIREBASE_PROJECT_ID / FIREBASE_CLIENT_EMAIL missing from environment.');
+      return {
+        success: false,
+        errorCode: 'FCM_NOT_CONFIGURED',
+        errorMessage: 'Firebase Admin SDK credentials (FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL) missing.'
+      };
     }
 
     try {
@@ -55,11 +68,8 @@ export class FirebaseFcmProvider implements PushProvider {
 }
 
 export const getPushProvider = (): PushProvider => {
-  switch (config.PUSH_PROVIDER) {
-    case 'fcm':
-      return new FirebaseFcmProvider();
-    case 'mock':
-    default:
-      return new MockPushProvider();
+  if (config.PUSH_PROVIDER === 'fcm' || (config.FIREBASE_PROJECT_ID && config.FIREBASE_CLIENT_EMAIL)) {
+    return new FirebaseFcmProvider();
   }
+  return new MockPushProvider();
 };

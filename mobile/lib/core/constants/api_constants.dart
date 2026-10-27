@@ -6,6 +6,8 @@ class ApiConstants {
 
   // Endpoints
   static const String health = '/health';
+  static const String requestOtp = '/users/auth/otp-request';
+  static const String loginWithPhone = '/users/auth/login';
   static const String userProfile = '/users/me';
   static const String emergencyContacts = '/emergency-contacts';
   static const String sos = '/sos';

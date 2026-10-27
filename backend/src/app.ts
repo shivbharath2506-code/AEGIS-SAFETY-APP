@@ -14,6 +14,7 @@ import locationRoutes from './modules/location/location.routes';
 import routesRoutes from './modules/routes/routes.routes';
 import nearbyServicesRoutes from './modules/nearby_services/nearby_services.routes';
 import safetyDataRoutes from './modules/safety_data/safety_data.routes';
+import tilesRoutes from './modules/tiles/tiles.routes';
 
 import path from 'path';
 
@@ -22,14 +23,30 @@ const app: Express = express();
 // Security Middlewares
 app.use(
   helmet({
-    contentSecurityPolicy: false
+    contentSecurityPolicy: false,
+    referrerPolicy: { policy: 'origin-when-cross-origin' },
+    crossOriginResourcePolicy: { policy: 'cross-origin' }
   })
 );
 app.use(cors({ origin: config.CORS_ORIGIN === '*' ? true : config.CORS_ORIGIN.split(',') }));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
-// Serve static interactive web app
+// Web Application Routes: Main Safety Dashboard directly on '/' and '/home'
+app.get(['/', '/home'], (req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+// Real-Time Live Location Trackers on '/live' and '/track'
+app.get(['/live', '/track'], (req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, '../public/track.html'));
+});
+
+app.get('/index.html', (req: Request, res: Response) => {
+  res.redirect('/');
+});
+
+// Serve static assets (scripts, styles, track.html, etc.)
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Apply general rate limiter
@@ -59,6 +76,7 @@ apiV1Router.use('/location-sessions', locationRoutes);
 apiV1Router.use('/routes', routesRoutes);
 apiV1Router.use('/nearby-services', nearbyServicesRoutes);
 apiV1Router.use('/safety-data', safetyDataRoutes);
+apiV1Router.use('/tiles', tilesRoutes);
 
 app.use(config.API_PREFIX, apiV1Router);
 

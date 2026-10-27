@@ -11,6 +11,8 @@ export const createSessionSchema = z.object({
   durationMinutes: z.number().min(5).max(480).default(60),
   initialLatitude: z.number().optional(),
   initialLongitude: z.number().optional(),
+  initialLat: z.number().optional(),
+  initialLng: z.number().optional(),
   accuracyMeters: z.number().optional()
 });
 
@@ -23,13 +25,15 @@ export const locationUpdateSchema = z.object({
 export class LocationController {
   async startSession(req: Request, res: Response): Promise<any> {
     const userId = req.user!.id;
-    const { durationMinutes, initialLatitude, initialLongitude, accuracyMeters } = req.body;
+    const { durationMinutes, initialLatitude, initialLongitude, initialLat, initialLng, accuracyMeters } = req.body;
+    const lat = typeof initialLatitude === 'number' ? initialLatitude : (typeof initialLat === 'number' ? initialLat : null);
+    const lng = typeof initialLongitude === 'number' ? initialLongitude : (typeof initialLng === 'number' ? initialLng : null);
 
     // Generate unguessable random raw token and SHA256 hash
     const rawToken = generateSecureToken(24);
     const tokenHash = hashToken(rawToken);
 
-    const expiresAt = new Date(Date.now() + durationMinutes * 60 * 1000);
+    const expiresAt = new Date(Date.now() + (durationMinutes || 60) * 60 * 1000);
 
     const session: LocationSession = {
       id: uuidv4(),
@@ -46,12 +50,12 @@ export class LocationController {
     inMemoryStore.locationUpdates.set(session.id, []);
 
     // Record initial location if provided
-    if (typeof initialLatitude === 'number' && typeof initialLongitude === 'number') {
+    if (lat !== null && lng !== null) {
       const initialUpdate: LocationUpdate = {
         id: uuidv4(),
         location_session_id: session.id,
-        latitude: initialLatitude,
-        longitude: initialLongitude,
+        latitude: lat,
+        longitude: lng,
         accuracy_meters: accuracyMeters ?? null,
         captured_at: new Date()
       };
@@ -76,9 +80,27 @@ export class LocationController {
   }
 
   async getSessionLocation(req: Request, res: Response): Promise<any> {
-    const id = req.params.id as string;
+    const rawId = req.params.id as string;
     const token = (req.query.token as string) || (req.headers['x-session-token'] as string);
-    const session = inMemoryStore.sessions.get(id);
+    const sessionIdParam = req.query.session as string;
+
+    let session: LocationSession | undefined;
+
+    if (rawId && rawId !== 'view') {
+      session = inMemoryStore.sessions.get(rawId);
+    } else if (sessionIdParam) {
+      session = inMemoryStore.sessions.get(sessionIdParam);
+    }
+
+    if (!session && token) {
+      const hashed = hashToken(token);
+      for (const s of inMemoryStore.sessions.values()) {
+        if (s.token_hash === hashed || s.raw_token === token) {
+          session = s;
+          break;
+        }
+      }
+    }
 
     if (!session) {
       return errorResponse(res, 'NOT_FOUND', 'Live location session not found.', 404);
@@ -89,7 +111,7 @@ export class LocationController {
     // 1) Authenticated user is the owner
     // 2) Request includes the valid unguessable raw_token
     const isOwner = req.user && req.user.id === session.user_id;
-    const isValidToken = token && hashToken(token) === session.token_hash;
+    const isValidToken = token && (hashToken(token) === session.token_hash || token === session.raw_token);
 
     if (!isOwner && !isValidToken) {
       return errorResponse(
@@ -104,14 +126,17 @@ export class LocationController {
     const now = new Date();
     const isExpired = now > session.expires_at || !session.is_active;
 
-    const updates = inMemoryStore.locationUpdates.get(id) || [];
+    const updates = inMemoryStore.locationUpdates.get(session.id) || [];
     const latestUpdate = updates.length > 0 ? updates[updates.length - 1] : null;
 
     return successResponse(res, {
+      id: session.id,
       sessionId: session.id,
       isActive: session.is_active && !isExpired,
       isExpired,
       expiresAt: session.expires_at,
+      currentLatitude: latestUpdate ? latestUpdate.latitude : null,
+      currentLongitude: latestUpdate ? latestUpdate.longitude : null,
       latestLocation: latestUpdate
         ? {
             latitude: latestUpdate.latitude,
@@ -164,7 +189,7 @@ export class LocationController {
 
   async stopSession(req: Request, res: Response): Promise<any> {
     const userId = req.user!.id;
-    const id = req.params.id as string;
+    const id = (req.params.id || req.body.sessionId || req.body.id) as string;
     const session = inMemoryStore.sessions.get(id);
 
     if (!session) {

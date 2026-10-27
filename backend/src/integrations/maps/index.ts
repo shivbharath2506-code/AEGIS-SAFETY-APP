@@ -9,6 +9,18 @@ export interface RouteCoordinate {
   longitude: number;
 }
 
+export interface RouteFacility {
+  id: string;
+  name: string;
+  category: 'POLICE' | 'HOSPITAL' | 'PHARMACY';
+  latitude: number;
+  longitude: number;
+  phone: string;
+  address: string;
+  distanceFromRouteMeters: number;
+  isEmergencyService: boolean;
+}
+
 export interface RouteAlternative {
   routeId: string;
   name: string;
@@ -16,6 +28,14 @@ export interface RouteAlternative {
   distanceMeters: number;
   durationSeconds: number;
   coordinates: RouteCoordinate[];
+  corridorFacilities: RouteFacility[];
+  facilitySummary: {
+    policeCount: number;
+    hospitalCount: number;
+    pharmacyCount: number;
+    totalCount: number;
+    formattedText: string;
+  };
   safetyAssessment: {
     safetyScore: number | null; // 1-10 or null if insufficient data
     confidenceLabel: 'AUTHORITATIVE' | 'MODERATE' | 'COMMUNITY' | 'INSUFFICIENT_DATA';
@@ -92,19 +112,27 @@ export class RouteEngine {
     const midLat = (originLat + destLat) / 2;
     const midLng = (originLng + destLng) / 2;
 
+    // Generate smooth waypoints between origin, midpoints, and destination
+    const createCurvedCoords = (midLatOffset: number, midLngOffset: number, count: number = 8): RouteCoordinate[] => {
+      const points: RouteCoordinate[] = [];
+      const p0 = { lat: originLat, lng: originLng };
+      const p1 = { lat: midLat + midLatOffset, lng: midLng + midLngOffset };
+      const p2 = { lat: destLat, lng: destLng };
+
+      for (let i = 0; i <= count; i++) {
+        const t = i / count;
+        const lat = (1 - t) * (1 - t) * p0.lat + 2 * (1 - t) * t * p1.lat + t * t * p2.lat;
+        const lng = (1 - t) * (1 - t) * p0.lng + 2 * (1 - t) * t * p1.lng + t * t * p2.lng;
+        points.push({ latitude: Number(lat.toFixed(6)), longitude: Number(lng.toFixed(6)) });
+      }
+      return points;
+    };
+
     // Alternative 1: Primary Arterial (e.g., via 100 Feet Inner Ring Road / Main Highway)
-    const route1Coords: RouteCoordinate[] = [
-      { latitude: originLat, longitude: originLng },
-      { latitude: midLat + 0.005, longitude: midLng + 0.008 },
-      { latitude: destLat, longitude: destLng }
-    ];
+    const route1Coords = createCurvedCoords(0.005, 0.008, 10);
 
     // Alternative 2: Secondary Boulevard / Alternate Avenue
-    const route2Coords: RouteCoordinate[] = [
-      { latitude: originLat, longitude: originLng },
-      { latitude: midLat - 0.006, longitude: midLng - 0.006 },
-      { latitude: destLat, longitude: destLng }
-    ];
+    const route2Coords = createCurvedCoords(-0.006, -0.006, 10);
 
     const rawAlternatives = [
       {
@@ -134,28 +162,79 @@ export class RouteEngine {
     const facilities = inMemoryStore.facilities;
     const safetyData = inMemoryStore.safetyData;
 
-    return rawRoutes.map((route, idx) => {
-      // Calculate how many verified facilities are within 500m of this route's trajectory
-      let facilitiesNearRoute = 0;
-      for (const fac of facilities) {
-        for (const pt of route.coords) {
-          if (calculateDistanceMeters(fac.latitude, fac.longitude, pt.latitude, pt.longitude) <= 800) {
-            facilitiesNearRoute++;
-            break;
-          }
+    const getMinDistanceToRoute = (facLat: number, facLng: number, coords: RouteCoordinate[]): number => {
+      let minDist = Infinity;
+      for (let i = 0; i < coords.length; i++) {
+        const d = calculateDistanceMeters(facLat, facLng, coords[i].latitude, coords[i].longitude);
+        if (d < minDist) minDist = d;
+      }
+      for (let i = 0; i < coords.length - 1; i++) {
+        const p1 = coords[i];
+        const p2 = coords[i + 1];
+        const segDist = calculateDistanceMeters(p1.latitude, p1.longitude, p2.latitude, p2.longitude);
+        const steps = Math.max(1, Math.min(10, Math.ceil(segDist / 200)));
+        for (let s = 1; s < steps; s++) {
+          const t = s / steps;
+          const sLat = p1.latitude + t * (p2.latitude - p1.latitude);
+          const sLng = p1.longitude + t * (p2.longitude - p1.longitude);
+          const dS = calculateDistanceMeters(facLat, facLng, sLat, sLng);
+          if (dS < minDist) minDist = dS;
         }
       }
+      return minDist;
+    };
+
+    return rawRoutes.map((route, idx) => {
+      // Find all verified facilities within 1400m of this route's trajectory corridor
+      const corridorFacilities: RouteFacility[] = [];
+      for (const fac of facilities) {
+        const dist = getMinDistanceToRoute(fac.latitude, fac.longitude, route.coords);
+        if (dist <= 1400) {
+          corridorFacilities.push({
+            id: fac.id,
+            name: fac.name,
+            category: fac.category as 'POLICE' | 'HOSPITAL' | 'PHARMACY',
+            latitude: fac.latitude,
+            longitude: fac.longitude,
+            phone: fac.phone_number || '112',
+            address: fac.address || 'Chennai Metropolitan Area',
+            distanceFromRouteMeters: Math.round(dist),
+            isEmergencyService: fac.is_emergency_service
+          });
+        }
+      }
+
+      // Sort corridor facilities by proximity to route
+      corridorFacilities.sort((a, b) => a.distanceFromRouteMeters - b.distanceFromRouteMeters);
+
+      const police = corridorFacilities.filter((f) => f.category === 'POLICE');
+      const hospitals = corridorFacilities.filter((f) => f.category === 'HOSPITAL');
+      const pharmacies = corridorFacilities.filter((f) => f.category === 'PHARMACY');
+
+      const parts: string[] = [];
+      if (police.length > 0) parts.push(`${police.length} Police Stn${police.length > 1 ? 's' : ''}`);
+      if (hospitals.length > 0) parts.push(`${hospitals.length} Hospital${hospitals.length > 1 ? 's' : ''}`);
+      if (pharmacies.length > 0) parts.push(`${pharmacies.length} Pharmac${pharmacies.length > 1 ? 'ies' : 'y'}`);
+      const formattedText = parts.length > 0 ? parts.join(', ') : 'No verified facilities along corridor';
+
+      const facilitySummary = {
+        policeCount: police.length,
+        hospitalCount: hospitals.length,
+        pharmacyCount: pharmacies.length,
+        totalCount: corridorFacilities.length,
+        formattedText
+      };
+
+      const facilitiesNearRoute = corridorFacilities.length;
 
       // Check lighting points
       let lightingPointsCovered = 0;
       let hasIsolatedWarning = false;
       for (const s of safetyData) {
-        for (const pt of route.coords) {
-          if (calculateDistanceMeters(s.latitude, s.longitude, pt.latitude, pt.longitude) <= 800) {
-            if (s.category === 'LIGHTING') lightingPointsCovered++;
-            if (s.category === 'ISOLATED_AREA') hasIsolatedWarning = true;
-            break;
-          }
+        const dist = getMinDistanceToRoute(s.latitude, s.longitude, route.coords);
+        if (dist <= 1000) {
+          if (s.category === 'LIGHTING') lightingPointsCovered++;
+          if (s.category === 'ISOLATED_AREA') hasIsolatedWarning = true;
         }
       }
 
@@ -187,6 +266,8 @@ export class RouteEngine {
         distanceMeters: route.distance,
         durationSeconds: route.duration,
         coordinates: route.coords,
+        corridorFacilities,
+        facilitySummary,
         safetyAssessment: {
           safetyScore: score,
           confidenceLabel: confidence,
@@ -198,7 +279,7 @@ export class RouteEngine {
             transparencyNote:
               confidence === 'INSUFFICIENT_DATA'
                 ? 'Insufficient verified lighting or patrol data recorded for this path. Exercise personal awareness.'
-                : `Calculated from ${facilitiesNearRoute} verified facilities and audited arterial streetlighting. Route is never guaranteed safe.`
+                : `Calculated from ${facilitiesNearRoute} verified facilities (${facilitySummary.formattedText}) and audited arterial streetlighting. Route is never guaranteed safe.`
           }
         },
         navigationHandoffUrl: handoffUrl

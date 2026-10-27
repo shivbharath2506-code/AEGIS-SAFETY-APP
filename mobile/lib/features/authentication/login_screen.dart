@@ -12,7 +12,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _phoneController = TextEditingController(text: '9876543210');
+  final _phoneController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
@@ -26,13 +26,23 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
-    final phone = '+91${_phoneController.text.trim()}';
+    final rawDigits = _phoneController.text.trim().replaceAll(RegExp(r'\D'), '');
+    final phone = '+91$rawDigits';
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     final success = await authProvider.sendOtp(phone);
     setState(() => _isLoading = false);
 
     if (success && mounted) {
+      if (authProvider.dispatchedDevOtp != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Dev Mode (SMS Gateway not configured): Your OTP is ${authProvider.dispatchedDevOtp}'),
+            backgroundColor: AppColors.infoBlue,
+            duration: const Duration(seconds: 10),
+          ),
+        );
+      }
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -130,28 +140,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                         )
                       : const Text('Send Verification OTP'),
-                ),
-
-                const SizedBox(height: 20),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.infoBlue.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.infoBlue.withOpacity(0.2)),
-                  ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.info_outline, size: 18, color: AppColors.infoBlue),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Development Mode: Pre-filled with demo Chennai test account (+91 9876543210).',
-                          style: TextStyle(fontSize: 12, color: AppColors.infoBlue),
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
               ],
             ),

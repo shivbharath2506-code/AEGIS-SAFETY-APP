@@ -1,3 +1,4 @@
+import '../core/constants/api_constants.dart';
 import '../core/network/api_client.dart';
 import '../core/storage/local_cache.dart';
 import '../models/user_model.dart';
@@ -7,58 +8,69 @@ class AuthService {
 
   AuthService({ApiClient? apiClient}) : _apiClient = apiClient ?? ApiClient();
 
-  /// Simulates or executes Firebase Phone Auth OTP request
-  Future<bool> requestPhoneOtp(String phoneNumber) async {
-    // In production, FirebaseAuth.instance.verifyPhoneNumber(...) is invoked.
-    // For development, validates Indian phone number format
-    final cleanPhone = phoneNumber.replaceAll(RegExp(r'\s+'), '');
-    if (cleanPhone.length < 10) {
+  /// Requests a real-time 6-digit OTP dispatched to the specified phone number
+  Future<String?> requestPhoneOtp(String phoneNumber) async {
+    final cleanPhone = phoneNumber.replaceAll(RegExp(r'[^0-9+]'), '');
+    final digitsOnly = cleanPhone.replaceAll('+', '');
+    if (digitsOnly.length < 10) {
       throw ApiException(
         code: 'INVALID_PHONE',
         message: 'Please enter a valid 10-digit mobile number.',
         statusCode: 400,
       );
     }
-    await Future.delayed(const Duration(milliseconds: 600));
-    return true;
+
+    final response = await _apiClient.post(
+      ApiConstants.requestOtp,
+      body: {'phoneNumber': cleanPhone},
+    );
+
+    if (response is Map<String, dynamic> && response.containsKey('devOtp')) {
+      return response['devOtp'] as String?;
+    }
+    return null;
   }
 
-  /// Verifies OTP code and exchanges for authenticated session
+  /// Verifies real-time OTP code with AEGIS server and establishes authenticated session
   Future<UserModel> verifyOtpAndLogin({
     required String phoneNumber,
     required String otpCode,
+    String? displayName,
   }) async {
-    await Future.delayed(const Duration(milliseconds: 700));
-
-    // Verify 6-digit OTP code in development mock (e.g., 123456 or any 6 digits)
-    if (otpCode.length != 6) {
+    final cleanOtp = otpCode.trim();
+    if (cleanOtp.length != 6) {
       throw ApiException(
         code: 'INVALID_OTP',
-        message: 'Invalid OTP code. Please enter the 6-digit verification code.',
+        message: 'Please enter a complete 6-digit verification code.',
         statusCode: 400,
       );
     }
 
-    // Save dev mock token & session
-    const mockToken = 'mock-token-chennai-dev-session';
-    const mockUserId = 'demo-user-chennai-01';
+    final response = await _apiClient.post(
+      ApiConstants.loginWithPhone,
+      body: {
+        'phoneNumber': phoneNumber,
+        'otp': cleanOtp,
+        if (displayName != null && displayName.isNotEmpty) 'displayName': displayName,
+      },
+    );
 
-    await LocalCache.saveAuthSession(mockToken, mockUserId);
+    if (response is Map<String, dynamic>) {
+      final token = response['token'] as String?;
+      final userJson = response['user'] as Map<String, dynamic>?;
 
-    // Fetch user profile from API
-    try {
-      final data = await _apiClient.get('/users/me');
-      return UserModel.fromJson(data);
-    } catch (_) {
-      // Fallback local model if backend offline
-      return UserModel(
-        id: mockUserId,
-        displayName: 'Priya Ramanathan',
-        verifiedPhoneNumber: phoneNumber,
-        medicalNotes: 'Asthma inhaler in purse. Blood group: B positive.',
-        accountStatus: 'ACTIVE',
-      );
+      if (token != null && userJson != null) {
+        final user = UserModel.fromJson(userJson);
+        await LocalCache.saveAuthSession(token, user.id);
+        return user;
+      }
     }
+
+    throw ApiException(
+      code: 'AUTH_FAILED',
+      message: 'Failed to process authentication session from server response.',
+      statusCode: 500,
+    );
   }
 
   Future<UserModel?> getCurrentUser() async {

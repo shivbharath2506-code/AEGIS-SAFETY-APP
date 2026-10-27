@@ -35,18 +35,21 @@ export interface SOSAlert {
   longitude: number | null;
   location_accuracy_meters: number | null;
   location_captured_at: Date | null;
+  live_session_id?: string | null;
+  live_tracking_url?: string | null;
   resolution_note?: string | null;
   created_at: Date;
   resolved_at: Date | null;
 }
 
-export type DeliveryChannel = 'SMS' | 'PUSH' | 'CALL_NOTICE';
+export type DeliveryChannel = 'SMS' | 'PUSH' | 'CALL_NOTICE' | 'VOICE_CALL';
 
 export type DeliveryStatus =
   | 'CREATED'
   | 'QUEUED'
   | 'SENDING'
   | 'SENT_TO_PROVIDER'
+  | 'SIMULATED_DISPATCH'
   | 'DELIVERED'
   | 'FAILED'
   | 'CANCELLED';
